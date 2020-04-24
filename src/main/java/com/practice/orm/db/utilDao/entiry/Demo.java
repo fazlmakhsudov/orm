@@ -4,6 +4,8 @@ package com.practice.orm.db.utilDao.entiry;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Demo {
     public static void main(String[] args) {
@@ -11,7 +13,6 @@ public class Demo {
         Connection connObj = null;
         PreparedStatement pstmtObj = null;
         PropertyBundle pr = new PropertyBundle(Path.MYSQL_PATH);
-
         try {
             DBUtil dbUtil = DBUtil.getInstance(pr);
             dbUtil.printMapPoolOfConnection();
