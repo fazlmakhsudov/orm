@@ -21,7 +21,9 @@ public class DBUtil {
 
         this.dataSource = jdbcObj.setUpPool(optionalInt.orElse(1));
         this.mapPoolOfConnections = this.initializeMapOfConnection(optionalInt.orElse(1));
-        logger.info("DataSource object has been initialized: " + jdbcObj.printDbStatus());
+        logger.log(Level.INFO, "DataSource object has been initialized: {0}",
+                new String[]{jdbcObj.printDbStatus()});
+
         logger.info("DBUtil object has been instantiated");
     }
 
@@ -51,8 +53,8 @@ public class DBUtil {
                 break;
             }
         }
-        System.out.print("getConnection : ");
-        printMapPoolOfConnection();
+        logger.log(Level.INFO, "getConnectionFromPool {0}",
+                new String[]{this.printMapPoolOfConnection()});
         return connection;
     }
 
@@ -60,9 +62,8 @@ public class DBUtil {
 
         mapPoolOfConnections.replace(connection, false);
         connection = null;
-        System.out.println("*****connection is : " + connection);
-        System.out.print("\nreturnConnection : ");
-        printMapPoolOfConnection();
+        logger.log(Level.INFO, "returnConnectionToPool {0}",
+                new String[]{this.printMapPoolOfConnection()});
         return connection;
     }
 
@@ -73,17 +74,17 @@ public class DBUtil {
             this.mapPoolOfConnections.replace(connection, false);
             connection.close();
         }
-        printMapPoolOfConnection();
+        logger.log(Level.INFO, "{0}",
+                new String[]{this.printMapPoolOfConnection()});
         logger.info("disconnect succeeded");
     }
 
-    public String printMapPoolOfConnection() {
+    private String printMapPoolOfConnection() {
         StringBuilder sb = new StringBuilder();
         sb.append("Map pool of connections:\n");
         this.mapPoolOfConnections.forEach((conn, flag) -> {
             sb.append(conn + "; isUsed: " + flag + "\n");
         });
-        System.out.println(sb.toString());
         return sb.toString();
     }
 }
