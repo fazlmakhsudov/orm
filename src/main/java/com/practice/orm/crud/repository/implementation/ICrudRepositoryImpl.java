@@ -1,36 +1,42 @@
 package com.practice.orm.crud.repository.implementation;
 
 import java.util.List;
-
+import java.sql.DriverManager;
 import com.practice.orm.crud.repository.ICrudRepository;
 
-public class ICrudRepositoryImpl implements ICrudRepository<Class, Integer> {
-	
-	//public ICrudRepositoryImpl(DBUtil dbUtil, QueryFormer queryFormer) {
-	//}
-	
+public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
+
+	public ICrudRepositoryImpl(DBUtil dbUtil, QueryFormer queryFormer) {
+		
+	}
+
 	@Override
-	public Class add(Class object) {
+	public C add(C object) {
+		
 		return null;
 	}
 
 	@Override
-	public Class find(int id) {
+	public C find(int id) {
+		
 		return null;
 	}
 
 	@Override
-	public boolean modify(Class object) {
+	public boolean modify(C object) {
+		
 		return false;
 	}
 
 	@Override
-	public boolean remove(Class object) {
+	public boolean remove(C object) {
+		
 		return false;
 	}
 
 	@Override
-	public List<Class> findAll() {
+	public List<C> findAll() {
+		
 		return null;
 	}
 

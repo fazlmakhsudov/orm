@@ -2,14 +2,14 @@ package com.practice.orm.crud.repository;
 
 import java.util.List;
 
-public interface ICrudRepository<Class, Integer> {
-	Class add(Class object);
+public interface ICrudRepository<C, Integer> {
+	C add(C object);
 
-	Class find(int id);
+	C find(int id);
 
-	boolean modify(Class object);
+	boolean modify(C object);
 
-	boolean remove(Class object);
+	boolean remove(C object);
 
-	List<Class> findAll();
+	List<C> findAll();
 }

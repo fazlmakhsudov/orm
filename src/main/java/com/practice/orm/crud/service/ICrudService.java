@@ -2,14 +2,13 @@ package com.practice.orm.crud.service;
 
 import java.util.List;
 
-public interface ICrudService<Class, Integer> {
-	Class create(Class object);
+public interface ICrudService<C, Integer> {
+	C create(C object);
 
-	Class read(int id);
+	C read(int id);
 
-	boolean update(Class object);
+	boolean update(C object);
+	boolean delete(C object);
 
-	boolean delete(Class object);
-
-	List<Class> readAll();
+	List<C> readAll();
 }
