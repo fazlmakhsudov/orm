@@ -6,18 +6,29 @@ import com.practice.orm.crud.repository.implementation.ICrudRepositoryImpl;
 import com.practice.orm.db.utilDao.entiry.DBUtil;
 import com.practice.orm.db.utilDao.entiry.QueryFormer;
 
-public interface ICrudService<C, Integer> {
-	//ICrudRepositoryImpl iCrudRepository = new ICrudRepositoryImpl(DBUtil.getInstance(),
-	//		QueryFormer.getTableQueries());
+public interface ICrudService {
+	// ICrudRepositoryImpl iCrudRepository = new
+	// ICrudRepositoryImpl(DBUtil.getInstance(),
+	// QueryFormer.getTableQueries());
 
-	void create(C object);
+	static <C> void create(C object) {
 
-	void read(int id);
+	}
 
-	void update(C object);
+	static void read(int id) {
 
-	void delete(C object);
+	}
 
-	List<C> readAll();
+	static <C> void update(C object) {
+
+	}
+
+	static <C> void delete(C object) {
+
+	}
+
+	static <C> List<C> readAll() {
+		return null;
+	}
 
 }

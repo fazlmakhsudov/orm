@@ -12,10 +12,13 @@ public class QueryFormer {
      private Map<String, Map<String, String>> tableQueries;
      private PropertyBundle propertyBundle;
      private Map<String, List<String>> tablesAndColumns;
+     private Map<String, Map<String, List<String>>> primaryConfiguration;
+     private StringBuffer initialDatabaseConfiguration;
      private static final Logger logger = Logger.getLogger("QueryFormer.class");
 
     private QueryFormer() {
         this.tableQueries = new HashMap<>();
+        this.initialDatabaseConfiguration = new StringBuffer();
         logger.info("QueryFormer object has been instantiated");
     }
 
@@ -30,14 +33,25 @@ public class QueryFormer {
         this.tablesAndColumns = tablesAndColumns;
         queryFormer.tableQueries = tablesAndColumns.keySet().stream()
                 .collect(Collectors.toMap(s -> s, s -> new HashMap<>()));
-        logger.log(Level.INFO, "setTablesAndColumns() with: {0}",
+        logger.log(Level.INFO, "setTablesAndColumns() with parameter:\n {0}",
                 new String[]{tablesAndColumns.toString()});
     }
 
     public void setPropertyBundle(PropertyBundle propertyBundle) {
         queryFormer.propertyBundle = propertyBundle;
-        logger.log(Level.INFO, "setPropertyBundle() with: {0}",
+        logger.log(Level.INFO, "setPropertyBundle() with parameter:\n {0}",
                 new String[]{propertyBundle.toString()});
+    }
+
+    public void setPrimaryConfiguration(Map<String, Map<String, List<String>>> primaryConfiguration) {
+        queryFormer.primaryConfiguration = primaryConfiguration;
+        logger.log(Level.INFO, "setPrimaryConfiguration() with parameter:\n {0}",
+                new String[]{primaryConfiguration.toString()});
+    }
+
+    public String getInitialDatabaseConfiguration() {
+        queryFormer.formInitialDatabaseConfiguration();
+        return queryFormer.initialDatabaseConfiguration.toString();
     }
 
     public String getQuery(String tableName, String action) {
@@ -56,6 +70,36 @@ public class QueryFormer {
                 new String[]{printTablesQueries()});
     }
 
+    public void formInitialDatabaseConfiguration() {
+        queryFormer.primaryConfiguration.forEach(
+                (tableName, columnsMap) -> {
+                    queryFormer.initialDatabaseConfiguration.append(
+                            queryFormer.formCreateTableQuery(tableName, columnsMap));
+                }
+        );
+        logger.log(Level.INFO, "formInitialDatabaseConfiguration() with parameters:\n {0}",
+                new String[]{printInitialDatabaseConfiguration()});
+    }
+
+    private String formCreateTableQuery(String tableName, Map<String, List<String>> columns) {
+        StringBuffer sb = new StringBuffer();
+        String pattern = queryFormer.propertyBundle.getQuery("create-table");
+        pattern = queryFormer.changeTableName(tableName, pattern);
+        columns.forEach(
+                (columnName, columnParameters) -> {
+                    sb.append(formColumnQueryForCreateTable(columnName, columnParameters));
+                }
+        );
+        sb.append("PRIMARY KEY (" + queryFormer.getColumnId(tableName) + ")");
+        pattern = pattern.replace("*columns*", sb.toString());
+        return pattern;
+    }
+
+    private String formColumnQueryForCreateTable(String columnName, List<String> columnParameters) {
+        return columnName + " " + columnParameters.get(0) + " " + columnParameters.get(1) + ",";
+    }
+
+
     private Map<String, String> getActionQueriesForTable(Map<String, String> propertyBundlePatterns, String tableName) {
         Map<String, String> actionQueries = new HashMap<>();
         propertyBundlePatterns.forEach((action, queryPattern) ->
@@ -69,8 +113,23 @@ public class QueryFormer {
 
     private String formQuery(String tableName, String action, String queryPattern) {
         String formedQuery = "";
-       // needs to accomplish
-
+        switch (action.toLowerCase().trim()) {
+            case "create":
+                formedQuery = queryFormer.formCreateQuery(tableName, queryPattern);
+                break;
+            case "read":
+                formedQuery = queryFormer.formReadQuery(tableName, queryPattern);
+                break;
+            case "update":
+                formedQuery = queryFormer.formUpdateQuery(tableName, queryPattern);
+                break;
+            case "delete":
+                formedQuery = queryFormer.formDeleteQuery(tableName, queryPattern);
+                break;
+            default:
+                formedQuery = queryFormer.formReadAllQuery(tableName, queryPattern);
+                break;
+        }
         logger.log(Level.INFO, "formQuery({0}, {1}, {2}) returns: {3}",
                 new String[]{tableName, action, queryPattern, formedQuery});
         return formedQuery;
@@ -78,13 +137,13 @@ public class QueryFormer {
 
     private String formCreateQuery(String tableName, String queryPattern) {
         String columnId = queryFormer.getColumnId(tableName);
-        // needs to accomplish
-
+        queryPattern = queryFormer.changeTableName(tableName, queryPattern);
+        queryPattern = queryPattern.replace("*columns*", queryFormer.getColumns(tableName, columnId));
+        queryPattern = queryPattern.replace("*values*", queryFormer.getValues(tableName, columnId));
         return queryPattern;
     }
 
     private String changeTableName(String tableName, String queryPattern) {
-        // needs to accomplish
         return queryPattern.replace("*table*", tableName);
     }
 
@@ -99,9 +158,11 @@ public class QueryFormer {
     }
 
     private String getValues(String tableName, String columnId) {
-        // needs to accomplish
-
-        return null;
+        return queryFormer.tablesAndColumns.get(tableName).stream()
+                .filter(s -> !s.equalsIgnoreCase(columnId))
+                .reduce((s1, s2) -> s1 + ", " + s2)
+                .get()
+                .replaceAll("[\\w]+", "?");
     }
 
     private String formReadQuery(String tableName, String queryPattern) {
@@ -116,8 +177,10 @@ public class QueryFormer {
 
     private String formUpdateQuery(String tableName, String queryPattern) {
         queryPattern = queryFormer.changeTableName(tableName, queryPattern);
-        // needs to accomplish
-
+        String id = queryFormer.tablesAndColumns.get(tableName).get(0);
+        String columnValue = queryFormer.getColumnValue(tableName, id);
+        queryPattern = queryPattern.replace("*set-block*", columnValue);
+        queryPattern = queryPattern.replace("*condition*", queryFormer.getCondition(tableName));
         return queryPattern;
     }
 
@@ -128,8 +191,9 @@ public class QueryFormer {
     }
 
     private String formDeleteQuery(String tableName, String queryPattern) {
-        // needs to accomplish
-
+        queryPattern = queryFormer.changeTableName(tableName, queryPattern);
+        queryPattern = queryFormer.changeTableName(tableName, queryPattern);
+        queryPattern = queryPattern.replace("*condition*", queryFormer.getCondition(tableName));
         return queryPattern;
     }
 
@@ -152,5 +216,9 @@ public class QueryFormer {
         );
         sb.append("\n");
         return sb.toString();
+    }
+
+    private String printInitialDatabaseConfiguration() {
+        return queryFormer.initialDatabaseConfiguration.toString().replaceAll(";", ";\n");
     }
 }

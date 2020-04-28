@@ -6,10 +6,19 @@ public class ColumnForDB {
     private String name;
     private String type;
     private Field field;
+    private int length;
     private Boolean nullable;
 
     public Boolean getNullable() {
         return nullable;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 
     public void setNullable(Boolean nullable) {
