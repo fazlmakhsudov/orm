@@ -1,5 +1,6 @@
 package com.practice.orm.crud.repository.implementation;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -8,39 +9,47 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.practice.orm.crud.repository.ICrudRepository;
+import com.practice.orm.db.utilDao.entiry.DBUtil;
+import com.practice.orm.db.utilDao.entiry.PropertyBundle;
+import com.practice.orm.db.utilDao.entiry.QueryFormer;
 
 public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
-	String jdbcUrl = "jdbc:mysql://localhost:3306/test";
-	String dbName = "user";
-	String dbPassword = "password";
+	private DBUtil dbUtil;
+	private QueryFormer queryFormer;
+	private List<C> ObjectList;
+	private PropertyBundle propertyBundle;
 
-	String fullname = "Vasya Jopkin";
-	String username = "Vasya";
-	String email = "vasyan@jopa.mira";
-	String password = "12345";
+	public ICrudRepositoryImpl(DBUtil dbUtil, QueryFormer queryFormer) {
+		this.dbUtil = dbUtil;
+		this.queryFormer = queryFormer;
+		ObjectList = new LinkedList<C>();
+		propertyBundle = new PropertyBundle("path-template");
 
-	// private DBUtil dbutil;
-	// private QueryFormer queryFormer;
-
-	// private ObjectList
-
-	// public ICrudRepositoryImpl(DBUtil dbUtil, QueryFormer queryFormer) {
-	// this.dbutil=dbUtil;
-	// this.queryFormer=queryFormer;
-	// }
+		try {
+			dbUtil = DBUtil.getInstance(propertyBundle);
+			queryFormer = QueryFormer.getInstance();
+			queryFormer.setPropertyBundle(propertyBundle);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 	@Override
 	public C add(C object) {
 
 		try {
-			Connection connection = DriverManager.getConnection(jdbcUrl, dbName, dbPassword);
-			String sqlQuery = "INSERT INTO users (username, email, fullname, password)" + "VALUES(?,?,?,?)";
+
+			Connection connection = dbUtil.getConnectionFromPool();
+			// queryFormer.setTablesAndColumns(tablesAndColumns);
+			String sqlQuery = queryFormer.getQuery("add something", "add something");
+
 			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-			preparedStatement.setString(1, username);
-			preparedStatement.setString(2, email);
-			preparedStatement.setString(3, fullname);
-			preparedStatement.setString(4, password);
+			preparedStatement.setString(1, "add something");
+			preparedStatement.setString(2, "add something");
+			preparedStatement.setString(3, "add something");
+			preparedStatement.setString(4, "add something");
 
 			int rows = preparedStatement.executeUpdate();
 
@@ -59,9 +68,9 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	@Override
 	public C find(int id) {
 		String index = String.valueOf(id);
-		String sqlQuery = "SELECT user FROM users WHERE id = " + index;
+		String sqlQuery = queryFormer.getQuery("", "");
 		try {
-			Connection connection = DriverManager.getConnection(jdbcUrl, dbName, dbPassword);
+			Connection connection = dbUtil.getConnectionFromPool();
 			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
 			ResultSet resultSet = preparedStatement.executeQuery(sqlQuery);
 

@@ -13,23 +13,23 @@ public class ICrudServiceImpl<C> implements ICrudService<C, Integer> {
 	}
 
 	@Override
-	public C create(C object) {
-		return crudRepository.add(object);
+	public void create(C object) {
+		
 	}
 
 	@Override
-	public C read(int id) {
-		return crudRepository.find(id);
+	public void read(int id) {
+		
 	}
 
 	@Override
-	public boolean update(C object) {
-		return crudRepository.modify(object);
+	public void update(C object) {
+		
 	}
 
 	@Override
-	public boolean delete(C object) {
-		return crudRepository.remove(object);
+	public void delete(C object) {
+		
 	}
 
 	@Override
