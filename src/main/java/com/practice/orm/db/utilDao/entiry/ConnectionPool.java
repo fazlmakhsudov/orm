@@ -24,11 +24,11 @@ public class ConnectionPool {
     private static GenericObjectPool gPool = null;
 
     public ConnectionPool(PropertyBundle propertyBundle) {
-        this.JDBC_DRIVER = propertyBundle.getQuery("jdbcDriver");
-        this.JDBC_DB_URL = propertyBundle.getQuery("jdbcUrl") +
-                "/" + propertyBundle.getQuery("jdbcDatabase");
-        this.JDBC_USER = propertyBundle.getQuery("jdbcUserName");
-        this.JDBC_PASSWORD = propertyBundle.getQuery("jdbcPassword");
+        this.JDBC_DRIVER = propertyBundle.getConfiguration("jdbcDriver");
+        this.JDBC_DB_URL = propertyBundle.getConfiguration("jdbcUrl") +
+                "/" + propertyBundle.getConfiguration("jdbcDatabase");
+        this.JDBC_USER = propertyBundle.getConfiguration("jdbcUserName");
+        this.JDBC_PASSWORD = propertyBundle.getConfiguration("jdbcPassword");
         logger.log(Level.INFO, "ConnectionPool object has been initialised with params ({0}, {1}, {2}, {3})",
                 new String[]{logger.getName(), this.JDBC_DRIVER, this.JDBC_DB_URL, this.JDBC_USER, this.JDBC_PASSWORD});
     }

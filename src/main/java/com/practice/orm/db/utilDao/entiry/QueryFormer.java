@@ -83,7 +83,7 @@ public class QueryFormer {
 
     private String formCreateTableQuery(String tableName, Map<String, List<String>> columns) {
         StringBuffer sb = new StringBuffer();
-        String pattern = queryFormer.propertyBundle.getQuery("create-table");
+        String pattern = queryFormer.propertyBundle.getQuery(DbKeys.CREATE_TABLE);
         pattern = queryFormer.changeTableName(tableName, pattern);
         columns.forEach(
                 (columnName, columnParameters) -> {
@@ -102,9 +102,10 @@ public class QueryFormer {
 
     private Map<String, String> getActionQueriesForTable(Map<String, String> propertyBundlePatterns, String tableName) {
         Map<String, String> actionQueries = new HashMap<>();
-        propertyBundlePatterns.forEach((action, queryPattern) ->
-        {
-            actionQueries.put(action, queryFormer.formQuery(tableName, action, queryPattern));
+        propertyBundlePatterns.forEach((action, queryPattern) -> {
+            if (action.matches("\\w+")) {
+                actionQueries.put(action, queryFormer.formQuery(tableName, action, queryPattern));
+            }
         });
         logger.log(Level.INFO, "getActionQueriesForTable({0}) returns: {1}",
                 new String[]{tableName, actionQueries.toString()});
@@ -144,6 +145,7 @@ public class QueryFormer {
     }
 
     private String changeTableName(String tableName, String queryPattern) {
+
         return queryPattern.replace("*table*", tableName);
     }
 
