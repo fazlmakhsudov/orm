@@ -15,11 +15,27 @@ import java.util.stream.Collectors;
 
 public class Handler {
     private static Reflections reflections;
+    private static List<Class> classes = new LinkedList<>();
+
+    public static void addAnnotatedClass(Class<?> clazz) {
+        if (clazz.isAnnotationPresent(Entity.class)) {
+            classes.add(clazz);
+        }
+    }
 
     public static Set<Class<?>> getClassesNamedEntity() {
-        reflections = new Reflections(Main.class.getPackage().getName());
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
-        return classes;
+        Set<Class<?>> setClasses = new HashSet<>();
+        for (Class<?> clazz :
+                classes) {
+            if (clazz.isAnnotationPresent(Entity.class))
+                setClasses.add(clazz);
+        }
+        return setClasses;
+    }
+
+    public static void SetReflection(Reflections reflections)
+    {
+        reflections = reflections;
     }
 
     public static Map<String, List<String>> getTable() {
@@ -30,7 +46,7 @@ public class Handler {
             for (ColumnForDB c : t.getColumnForDBS()) {
                 columnsName.add(c.getName());
             }
-            table.put(t.getTableName(),columnsName);
+            table.put(t.getTableName(), columnsName);
         }
         return table;
     }
