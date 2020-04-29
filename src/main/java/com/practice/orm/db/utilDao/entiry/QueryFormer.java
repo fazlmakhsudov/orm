@@ -1,5 +1,7 @@
 package com.practice.orm.db.utilDao.entiry;
 
+import com.practice.orm.annotation.generator.GeneratorHandler;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +89,7 @@ public class QueryFormer {
         pattern = queryFormer.changeTableName(tableName, pattern);
         columns.forEach(
                 (columnName, columnParameters) -> {
-                    sb.append(formColumnQueryForCreateTable(columnName, columnParameters));
+                    sb.append(formColumnQueryForCreateTable(tableName, columnName, columnParameters));
                 }
         );
         sb.append("PRIMARY KEY (" + queryFormer.getColumnId(tableName) + ")");
@@ -95,8 +97,14 @@ public class QueryFormer {
         return pattern;
     }
 
-    private String formColumnQueryForCreateTable(String columnName, List<String> columnParameters) {
-        return columnName + " " + columnParameters.get(0) + " " + columnParameters.get(1) + ",";
+    private String formColumnQueryForCreateTable(String tableName, String columnName, List<String> columnParameters) {
+        String autoIncremet = "";
+        String columnId = queryFormer.getColumnId(tableName);
+        boolean flag = columnName.equalsIgnoreCase(columnId);
+        if (!GeneratorHandler.getInstance().isContainedTable(tableName) && flag) {
+            autoIncremet = " AUTO_INCREMENT";
+        }
+        return columnName + " " + columnParameters.get(0) + " " + columnParameters.get(1) + autoIncremet + ",";
     }
 
 
