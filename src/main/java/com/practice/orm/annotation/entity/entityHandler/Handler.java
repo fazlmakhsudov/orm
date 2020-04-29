@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Handler {
-    private static Reflections reflections;
     private static List<Class> classes = new LinkedList<>();
 
     public static void addAnnotatedClass(Class<?> clazz) {
@@ -33,10 +32,6 @@ public class Handler {
         return setClasses;
     }
 
-    public static void SetReflection(Reflections reflections)
-    {
-        reflections = reflections;
-    }
 
     public static Map<String, List<String>> getTable() {
         Map<String, List<String>> table = new HashMap<>();
@@ -110,7 +105,7 @@ public class Handler {
         return columnsForDB;
     }
 
-    private static String getNameTable(Class<?> clazz) {
+    public static String getNameTable(Class<?> clazz) {
         String name = null;
         if (clazz.isAnnotationPresent(Table.class)) {
             name = clazz.getAnnotation(Table.class).name();
