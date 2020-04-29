@@ -9,31 +9,41 @@ import java.util.stream.Collectors;
 
 public class GeneratorHandler {
     private static GeneratorHandler generatorHandler;
-     private Map<String, Integer> tableCounter;
-     private List<Class> annotatedClasses;
-     private final static Logger logger = Logger.getLogger("GeneratorHandler.class");
+    public Map<String, String> tableCounterType;
+    public Map<String, Integer> countersForTable;
+    private List<Class> annotatedClasses;
+    private final static Logger logger = Logger.getLogger("GeneratorHandler.class");
 
-     private GeneratorHandler() {
-         this.tableCounter = new HashMap<>();
-         logger.info("GeneratorHandler has been instantiated.");
-     }
+    private GeneratorHandler() {
+        this.tableCounterType = new HashMap<>();
+        this.countersForTable = new HashMap<>();
+        logger.info("GeneratorHandler has been instantiated.");
+    }
 
-     public static GeneratorHandler getInstance() {
-         if (generatorHandler == null) {
-             generatorHandler = new GeneratorHandler();
-         }
-         return generatorHandler;
-     }
+    public static GeneratorHandler getInstance() {
+        if (generatorHandler == null) {
+            generatorHandler = new GeneratorHandler();
+        }
+        return generatorHandler;
+    }
 
-     public void setAnnotatedClasses(List<Class> annotatedClasses) {
-         generatorHandler.annotatedClasses = annotatedClasses;
-         logger.log(Level.INFO, "setAnnatatedClasses() with parameter:\n {0}",
-                 new String[]{annotatedClasses.toString()});
-     }
+    public void setAnnotatedClasses(List<Class> annotatedClasses) {
+        generatorHandler.annotatedClasses = annotatedClasses;
+        logger.log(Level.INFO, "setAnnatatedClasses() with parameter:\n {0}",
+                new String[]{annotatedClasses.toString()});
+    }
 
-    public Map<String, Integer> buildTablesCounter() {
-        return annotatedClasses.stream()
-                .collect(Collectors.toMap(cl -> getTableName(cl), cl -> initializeCounterForTable(cl)));
+    public void buildTablesCounterGenerator() {
+        initializeCounterForTables();
+        generatorHandler.tableCounterType = generatorHandler.annotatedClasses.stream()
+                .filter(cl -> getAnnotatedField(cl.getDeclaredFields()).isPresent())
+                .collect(Collectors.toMap(cl -> getTableName(cl), cl -> initializeTableCounterType(cl)));
+    }
+
+    private void initializeCounterForTables() {
+        generatorHandler.countersForTable = generatorHandler.annotatedClasses.stream()
+                .filter(cl -> getAnnotatedField(cl.getDeclaredFields()).isPresent())
+                .collect(Collectors.toMap(cl -> getTableName(cl), cl -> 1));
     }
 
     private String getTableName(Class cl) {
@@ -46,13 +56,14 @@ public class GeneratorHandler {
         return tableName;
     }
 
-    private Integer initializeCounterForTable(Class cl) {
-         Integer counter = null;
-         Field[] fields = cl.getDeclaredFields();
-         if (generatorHandler.getAnnotatedField(fields).isPresent()) {
-             counter = 1;
-         }
-         return counter;
+    private String initializeTableCounterType(Class cl) {
+        String counter = null;
+        Field[] fields = cl.getDeclaredFields();
+        Optional<Field> optionalField = generatorHandler.getAnnotatedField(fields);
+        if (optionalField.isPresent()) {
+            counter = optionalField.get().getType().getSimpleName();
+        }
+        return counter;
     }
 
     private Optional<Field> getAnnotatedField(Field[] fields) {
@@ -61,12 +72,29 @@ public class GeneratorHandler {
                 .findFirst();
     }
 
-    public Integer generateIdValue(String tableName) {
-         Integer value = null;
-         if (generatorHandler.tableCounter.containsKey(tableName)) {
-             value = generatorHandler.tableCounter.get(tableName);
-             generatorHandler.tableCounter.replace(tableName,(value + 1));
-         }
-         return value;
+    public Object generateIdValue(String tableName) {
+        Object value = null;
+        if (generatorHandler.tableCounterType.containsKey(tableName)) {
+            value = generatorHandler.getValueForTable(tableName);
+        }
+        return value;
     }
+
+    private Object getValueForTable(String tableName) {
+        Object value = null;
+        int currentValue = generatorHandler.countersForTable.get(tableName);
+        String fieldType = generatorHandler.tableCounterType.get(tableName);
+        if (fieldType.equalsIgnoreCase("int")) {
+            value = currentValue;
+        } else {
+            value = tableName.toLowerCase() + "#" + currentValue;
+        }
+        generatorHandler.countersForTable.replace(tableName, currentValue + 1);
+        return value;
+    }
+    
+    public boolean isContainedTable(String tableName) {
+        return generatorHandler.tableCounterType.containsKey(tableName);
+    }
+
 }
