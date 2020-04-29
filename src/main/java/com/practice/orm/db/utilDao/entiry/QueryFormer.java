@@ -163,16 +163,20 @@ public class QueryFormer {
 
     private String getColumns(String tableName, String columnId) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
-                .filter(s -> !s.equalsIgnoreCase(columnId))
+                .filter(s -> queryFormer.isAnnotatedByGenerator(tableName) || !s.equalsIgnoreCase(columnId))
                 .reduce((s1, s2) -> s1 + ", " + s2).get();
     }
 
     private String getValues(String tableName, String columnId) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
-                .filter(s -> !s.equalsIgnoreCase(columnId))
+                .filter(s -> !s.equalsIgnoreCase(columnId) || queryFormer.isAnnotatedByGenerator(tableName))
                 .reduce((s1, s2) -> s1 + ", " + s2)
                 .get()
                 .replaceAll("[\\w]+", "?");
+    }
+
+    private boolean isAnnotatedByGenerator(String tableName) {
+        return GeneratorHandler.getInstance().isContainedTable(tableName);
     }
 
     private String formReadQuery(String tableName, String queryPattern) {
