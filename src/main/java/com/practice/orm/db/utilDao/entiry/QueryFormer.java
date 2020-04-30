@@ -11,12 +11,12 @@ import java.util.stream.Collectors;
 
 public class QueryFormer {
     private static QueryFormer queryFormer;
-     private Map<String, Map<String, String>> tableQueries;
-     private PropertyBundle propertyBundle;
-     private Map<String, List<String>> tablesAndColumns;
-     private Map<String, Map<String, List<String>>> primaryConfiguration;
-     private StringBuffer initialDatabaseConfiguration;
-     private static final Logger logger = Logger.getLogger("QueryFormer.class");
+    private Map<String, Map<String, String>> tableQueries;
+    private PropertyBundle propertyBundle;
+    private Map<String, List<String>> tablesAndColumns;
+    private Map<String, Map<String, List<String>>> primaryConfiguration;
+    private final StringBuffer initialDatabaseConfiguration;
+    private static final Logger logger = Logger.getLogger("QueryFormer.class");
 
     private QueryFormer() {
         this.tableQueries = new HashMap<>();

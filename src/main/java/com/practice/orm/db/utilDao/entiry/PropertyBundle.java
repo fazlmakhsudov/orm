@@ -4,19 +4,18 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 /**
  * Keeps ResourceBundle object and gives access to its content
  */
 public class PropertyBundle {
     private ResourceBundle resourceBundle;
-    private Map<String,String> queriesInMap;
+    private Map<String, String> queriesInMap;
     private static final Logger logger = Logger.getLogger("DBUtil.class");
 
     public PropertyBundle() {
@@ -26,7 +25,7 @@ public class PropertyBundle {
             QueryPatternMap.getInstance().setDbName(resourceBundle.getString("db"));
             this.queriesInMap = QueryPatternMap.getInstance().getQueriesInMap();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, e.getLocalizedMessage());
         }
         logger.info("property object has been instantiated");
     }
@@ -46,7 +45,7 @@ public class PropertyBundle {
 
     private String getPropertyFileName() throws IOException {
         String propertyName = getPropertyFile().get().getFileName().toString()
-                                                     .replace(".properties", "");
+                .replace(".properties", "");
         return propertyName;
     }
 
@@ -62,11 +61,5 @@ public class PropertyBundle {
         boolean flag = path.matches(".+resources/.+[.]properties");
         flag = flag && !path.matches("src/test.+");
         return flag;
-    }
-
-
-    public static void main(String[] args) throws IOException {
-
-
     }
 }

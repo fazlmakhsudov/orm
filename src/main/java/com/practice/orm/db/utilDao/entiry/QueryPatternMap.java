@@ -5,20 +5,20 @@ import java.util.Map;
 
 public class QueryPatternMap {
     private static QueryPatternMap queryPatternMap;
-     private Map<String, Map<String, String>> bigPatternMap;
-     private String dbName;
+    private final Map<String, Map<String, String>> bigPatternMap;
+    private String dbName;
 
-     private QueryPatternMap() {
-         this.bigPatternMap = new HashMap<>();
-     }
+    private QueryPatternMap() {
+        this.bigPatternMap = new HashMap<>();
+    }
 
-     public static QueryPatternMap getInstance() {
-         if (queryPatternMap == null) {
-             queryPatternMap = new QueryPatternMap();
-             queryPatternMap.initializeBigPatternMap();
-         }
-         return queryPatternMap;
-     }
+    public static QueryPatternMap getInstance() {
+        if (queryPatternMap == null) {
+            queryPatternMap = new QueryPatternMap();
+            queryPatternMap.initializeBigPatternMap();
+        }
+        return queryPatternMap;
+    }
 
     private void initializeBigPatternMap() {
         bigPatternMap.put(DbKeys.MYSQL, new HashMap<>());
@@ -32,14 +32,14 @@ public class QueryPatternMap {
     }
 
     public void setDbName(String dbName) {
-         this.dbName = dbName;
+        this.dbName = dbName;
     }
 
     public String getPattern(String key) {
-         return queryPatternMap.bigPatternMap.get(dbName).get(key);
-     }
+        return queryPatternMap.bigPatternMap.get(dbName).get(key);
+    }
 
-     public Map<String, String> getQueriesInMap() {
-         return queryPatternMap.bigPatternMap.get(dbName);
-     }
+    public Map<String, String> getQueriesInMap() {
+        return queryPatternMap.bigPatternMap.get(dbName);
+    }
 }
