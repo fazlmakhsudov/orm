@@ -2,12 +2,32 @@ package com.practice.orm.annotation.entity.DBHandlers;
 
 import java.lang.reflect.Field;
 
-public class ColumnForDB {
+public class ColumnDB {
+
+    private Field field;
     private String name;
     private String type;
-    private Field field;
     private int length;
     private Boolean nullable;
+
+    public ColumnDB() {
+    }
+
+    public ColumnDB(ColumnDB columnDB)
+    {
+        this.field = columnDB.field;
+        this.name = columnDB.name;
+        this.type = columnDB.type;
+
+    }
+
+    public ColumnDB(Field field, String name, String type, int length, Boolean nullable) {
+        this.field = field;
+        this.name = name;
+        this.type = type;
+        this.length = length;
+        this.nullable = nullable;
+    }
 
     public Boolean getNullable() {
         return nullable;
