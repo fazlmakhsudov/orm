@@ -8,14 +8,22 @@ public class TableDB {
     private String TableName;
     private ColumnDB primaryKey;
     private Set<ColumnDB> columnDBS;
-    private Set<ColumnDB> foreignKey;
+    private Set<ForeignKey> foreignKey;
 
 
-    public Set<ColumnDB> getForeignKey() {
+    public Class<?> getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(Class<?> clazz) {
+        this.clazz = clazz;
+    }
+
+    public Set<ForeignKey> getForeignKey() {
         return foreignKey;
     }
 
-    public void setForeignKey(Set<ColumnDB> foreignKey) {
+    public void setForeignKey(Set<ForeignKey> foreignKey) {
         this.foreignKey = foreignKey;
     }
 

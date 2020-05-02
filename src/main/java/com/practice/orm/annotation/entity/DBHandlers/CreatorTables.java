@@ -78,7 +78,6 @@ public class CreatorTables {
         return stringBuilder.toString();
     }
 
-
     private static String generatorBDFields(ColumnDB columnDB) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(columnDB.getName() + " ");

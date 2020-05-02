@@ -92,7 +92,7 @@ public class Handler {
                 columnDB.setNullable(true);
             else
                 columnDB.setNullable(false);
-            if (field.getAnnotation(Column.class).name() != "")
+            if (field.getAnnotation(Column.class).name() == "")
             {
                 columnDB.setName(field.getAnnotation(Column.class).name());
             }
@@ -137,8 +137,8 @@ public class Handler {
         ColumnDB columnDB;
         List<Field> idFields = Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(Id.class)).collect(Collectors.toList());
-        if (idFields.size() > 1) {
-            throw new Exception("More than 1 primary key");
+        if (idFields.size() !=1) {
+            throw new Exception("Class must have only one PK");
         } else {
             columnDB = new ColumnDB();
             if (idFields.get(0).isAnnotationPresent(Column.class)) {
