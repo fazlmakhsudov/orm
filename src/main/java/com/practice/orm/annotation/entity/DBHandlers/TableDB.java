@@ -4,27 +4,27 @@ import java.util.Set;
 
 public class TableDB {
 
-    private Set<ColumnForDB> columnForDBS;
+    private Class<?> clazz;
     private String TableName;
-    private ColumnForDB primaryKey;
-    private ColumnForDB foreignKey;
+    private ColumnDB primaryKey;
+    private Set<ColumnDB> columnDBS;
+    private Set<ColumnDB> foreignKey;
 
 
-
-    public ColumnForDB getForeignKey() {
+    public Set<ColumnDB> getForeignKey() {
         return foreignKey;
     }
 
-    public void setForeignKey(ColumnForDB foreignKey) {
+    public void setForeignKey(Set<ColumnDB> foreignKey) {
         this.foreignKey = foreignKey;
     }
 
-    public Set<ColumnForDB> getColumnForDBS() {
-        return columnForDBS;
+    public Set<ColumnDB> getColumnDBS() {
+        return columnDBS;
     }
 
-    public void setColumnForDBS(Set<ColumnForDB> columnForDBS) {
-        this.columnForDBS = columnForDBS;
+    public void setColumnDBS(Set<ColumnDB> columnDBS) {
+        this.columnDBS = columnDBS;
     }
 
     public String getTableName() {
@@ -35,11 +35,11 @@ public class TableDB {
         TableName = tableName;
     }
 
-    public ColumnForDB getPrimaryKey() {
+    public ColumnDB getPrimaryKey() {
         return primaryKey;
     }
 
-    public void setPrimaryKey(ColumnForDB primaryKey) {
+    public void setPrimaryKey(ColumnDB primaryKey) {
         this.primaryKey = primaryKey;
     }
 

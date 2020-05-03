@@ -1,12 +1,10 @@
 package com.practice.orm.annotation.entity.entityHandler;
 
-import com.practice.orm.annotation.entity.DBHandlers.ColumnForDB;
-import com.practice.orm.annotation.entity.Entity;
-import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Column;
-import com.practice.orm.annotation.entity.Table;
+import com.practice.orm.annotation.entity.DBHandlers.ColumnDB;
 import com.practice.orm.annotation.entity.DBHandlers.TableDB;
-import org.reflections.Reflections;
+import com.practice.orm.annotation.entity.Id;
+import com.practice.orm.annotation.entity.Table;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -14,32 +12,49 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Handler {
-    private static Reflections reflections;
 
-    public static Set<Class<?>> getClassesNamedEntity() {
-        //reflections = new Reflections(Main.class.getPackage().getName());
-        Set<Class<?>> classes = reflections.getTypesAnnotatedWith(Entity.class);
+    private static final List<Class> classes = new LinkedList<>();
+
+    public static void addClass(Class<?> clazz) {
+        classes.add(clazz);
+    }
+
+    public static List<Class> getClasses() {
         return classes;
     }
+
+    public static Set<Class<?>> getClassesNamedEntity() {
+        Set<Class<?>> setClasses = new HashSet<>();
+        for (Class<?> clazz :
+                classes) {
+            setClasses.add(clazz);
+        }
+        return setClasses;
+    }
+
 
     public static Map<String, List<String>> getTable() {
         Map<String, List<String>> table = new HashMap<>();
         for (TableDB t : getTablesDB()) {
             List<String> columnsName = new ArrayList<>();
             columnsName.add(t.getPrimaryKey().getName());
-            for (ColumnForDB c : t.getColumnForDBS()) {
+            for (ColumnDB c : t.getColumnDBS()) {
                 columnsName.add(c.getName());
             }
-            table.put(t.getTableName(),columnsName);
+            table.put(t.getTableName(), columnsName);
         }
         return table;
     }
 
     public static TableDB getTableDB(Class<?> clazz) {
         TableDB tableDB = new TableDB();
-        tableDB.setColumnForDBS(getColumns(clazz));
+        tableDB.setColumnDBS(getColumns(clazz));
         tableDB.setTableName(getNameTable(clazz));
-        tableDB.setPrimaryKey(getId(clazz));
+        try {
+            tableDB.setPrimaryKey(getId(clazz));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return tableDB;
     }
 
@@ -52,7 +67,7 @@ public class Handler {
         return tableDBS;
     }
 
-    private static Map<Class<?>, String> getNamesTable(Set<Class<?>> classes) {
+    public static Map<Class<?>, String> getNamesTable(Set<Class<?>> classes) {
         Map<Class<?>, String> names = new HashMap<Class<?>, String>();
         for (Class<?> clazz :
                 classes) {
@@ -70,50 +85,78 @@ public class Handler {
         return fields;
     }
 
-    private static ColumnForDB getColumn(Field field) {
-        ColumnForDB columnForDB = new ColumnForDB();
+    private static ColumnDB getColumn(Field field) {
+        ColumnDB columnDB = new ColumnDB();
         if (field.isAnnotationPresent(Column.class)) {
-            columnForDB.setName(field.getAnnotation(Column.class).name());
             if (field.getAnnotation(Column.class).nullable() == true)
-                columnForDB.setNullable(true);
+                columnDB.setNullable(true);
             else
-                columnForDB.setNullable(false);
+                columnDB.setNullable(false);
+            if (field.getAnnotation(Column.class).name() != "")
+            {
+                columnDB.setName(field.getAnnotation(Column.class).name());
+            }
+            else
+            {
+                columnDB.setName(field.getName());
+            }
         }
-        columnForDB.setLength(field.getAnnotation(Column.class).length());
-        columnForDB.setField(field);
-        columnForDB.setType(getSqlType(field));
-        return columnForDB;
+        columnDB.setLength(field.getAnnotation(Column.class).length());
+        columnDB.setField(field);
+        columnDB.setType(getSqlType(field));
+        return columnDB;
     }
 
-    private static Set<ColumnForDB> getColumns(Class<?> clazz) {
-        Set<ColumnForDB> columnsForDB = new HashSet<>();
+    private static Set<ColumnDB> getColumns(Class<?> clazz) {
+        Set<ColumnDB> columnsForDB = new HashSet<>();
         for (Field f :
                 getFieldsNamedByAnnotation(clazz, Column.class)) {
-            columnsForDB.add(getColumn(f));
+            if (f.isAnnotationPresent(Id.class))
+            {
+                continue;
+            }
+            else {
+                columnsForDB.add(getColumn(f));
+            }
         }
         return columnsForDB;
     }
 
-    private static String getNameTable(Class<?> clazz) {
+    public static String getNameTable(Class<?> clazz) {
         String name = null;
         if (clazz.isAnnotationPresent(Table.class)) {
             name = clazz.getAnnotation(Table.class).name();
         } else {
-            name = clazz.getSimpleName();
+            name = clazz.getSimpleName() + "s";
         }
         return name;
     }
 
-    private static ColumnForDB getId(Class<?> clazz) {
-        Field idField = Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.isAnnotationPresent(Id.class))
-                .findFirst().get();
-        ColumnForDB columnForDB = new ColumnForDB();
-        columnForDB.setField(idField);
-        columnForDB.setName(idField.getName());
-        columnForDB.setType(getSqlType(idField));
-        columnForDB.setNullable(false);
-        return columnForDB;
+    public static ColumnDB getId(Class<?> clazz) throws Exception {
+        String name;
+        ColumnDB columnDB;
+        List<Field> idFields = Arrays.stream(clazz.getDeclaredFields())
+                .filter(field -> field.isAnnotationPresent(Id.class)).collect(Collectors.toList());
+        if (idFields.size() > 1) {
+            throw new Exception("More than 1 primary key");
+        } else {
+            columnDB = new ColumnDB();
+            if (idFields.get(0).isAnnotationPresent(Column.class)) {
+                if (idFields.get(0).getAnnotation(Column.class).name().length()!=0) {
+                    name = idFields.get(0).getAnnotation(Column.class).name();
+                    System.out.println(name);
+                }
+                else
+                    name = getNameTable(clazz) + "_" + idFields.get(0).getName();
+            } else {
+                name = getNameTable(clazz) + "_" + idFields.get(0).getName();
+            }
+            columnDB.setField(idFields.get(0));
+            columnDB.setName(name);
+            columnDB.setType(getSqlType(idFields.get(0)));
+            columnDB.setNullable(false);
+        }
+        return columnDB;
     }
 
     private static String getSqlType(Field field) {

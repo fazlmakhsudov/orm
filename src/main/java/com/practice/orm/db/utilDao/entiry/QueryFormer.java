@@ -1,5 +1,7 @@
 package com.practice.orm.db.utilDao.entiry;
 
+import com.practice.orm.annotation.generator.GeneratorHandler;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,12 +11,12 @@ import java.util.stream.Collectors;
 
 public class QueryFormer {
     private static QueryFormer queryFormer;
-     private Map<String, Map<String, String>> tableQueries;
-     private PropertyBundle propertyBundle;
-     private Map<String, List<String>> tablesAndColumns;
-     private Map<String, Map<String, List<String>>> primaryConfiguration;
-     private StringBuffer initialDatabaseConfiguration;
-     private static final Logger logger = Logger.getLogger("QueryFormer.class");
+    private Map<String, Map<String, String>> tableQueries;
+    private PropertyBundle propertyBundle;
+    private Map<String, List<String>> tablesAndColumns;
+    private Map<String, Map<String, List<String>>> primaryConfiguration;
+    private StringBuffer initialDatabaseConfiguration;
+    private static final Logger logger = Logger.getLogger("QueryFormer.class");
 
     private QueryFormer() {
         this.tableQueries = new HashMap<>();
@@ -83,11 +85,11 @@ public class QueryFormer {
 
     private String formCreateTableQuery(String tableName, Map<String, List<String>> columns) {
         StringBuffer sb = new StringBuffer();
-        String pattern = queryFormer.propertyBundle.getQuery("create-table");
+        String pattern = queryFormer.propertyBundle.getQuery(DbKeys.CREATE_TABLE);
         pattern = queryFormer.changeTableName(tableName, pattern);
         columns.forEach(
                 (columnName, columnParameters) -> {
-                    sb.append(formColumnQueryForCreateTable(columnName, columnParameters));
+                    sb.append(formColumnQueryForCreateTable(tableName, columnName, columnParameters));
                 }
         );
         sb.append("PRIMARY KEY (" + queryFormer.getColumnId(tableName) + ")");
@@ -95,16 +97,23 @@ public class QueryFormer {
         return pattern;
     }
 
-    private String formColumnQueryForCreateTable(String columnName, List<String> columnParameters) {
-        return columnName + " " + columnParameters.get(0) + " " + columnParameters.get(1) + ",";
+    private String formColumnQueryForCreateTable(String tableName, String columnName, List<String> columnParameters) {
+        String autoIncremet = "";
+        String columnId = queryFormer.getColumnId(tableName);
+        boolean flag = columnName.equalsIgnoreCase(columnId);
+        if (!GeneratorHandler.getInstance().isContainedTable(tableName) && flag) {
+            autoIncremet = " AUTO_INCREMENT";
+        }
+        return columnName + " " + columnParameters.get(0) + " " + columnParameters.get(1) + autoIncremet + ",";
     }
 
 
     private Map<String, String> getActionQueriesForTable(Map<String, String> propertyBundlePatterns, String tableName) {
         Map<String, String> actionQueries = new HashMap<>();
-        propertyBundlePatterns.forEach((action, queryPattern) ->
-        {
-            actionQueries.put(action, queryFormer.formQuery(tableName, action, queryPattern));
+        propertyBundlePatterns.forEach((action, queryPattern) -> {
+            if (action.matches("\\w+")) {
+                actionQueries.put(action, queryFormer.formQuery(tableName, action, queryPattern));
+            }
         });
         logger.log(Level.INFO, "getActionQueriesForTable({0}) returns: {1}",
                 new String[]{tableName, actionQueries.toString()});
@@ -144,6 +153,7 @@ public class QueryFormer {
     }
 
     private String changeTableName(String tableName, String queryPattern) {
+
         return queryPattern.replace("*table*", tableName);
     }
 

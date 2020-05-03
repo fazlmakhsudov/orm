@@ -17,7 +17,7 @@ public class DBUtil {
 
     private DBUtil(PropertyBundle propertyBundle) throws Exception {
         ConnectionPool jdbcObj = new ConnectionPool(propertyBundle);
-        OptionalInt optionalInt = OptionalInt.of(Integer.valueOf(propertyBundle.getQuery("maxTotalConn")));
+        OptionalInt optionalInt = OptionalInt.of(Integer.valueOf(propertyBundle.getConfiguration("maxTotalConn")));
 
         this.dataSource = jdbcObj.setUpPool(optionalInt.orElse(1));
         this.mapPoolOfConnections = this.initializeMapOfConnection(optionalInt.orElse(1));
@@ -88,3 +88,4 @@ public class DBUtil {
         return sb.toString();
     }
 }
+
