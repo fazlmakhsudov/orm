@@ -1,5 +1,6 @@
 package com.practice.orm.annotation.entity.DBHandlers;
 
+import com.practice.orm.annotation.entity.entityHandler.Handler;
 import com.practice.orm.db.utilDao.entiry.DBUtil;
 import com.practice.orm.db.utilDao.entiry.PropertyBundle;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 
 public class CreatorTables {
     private static final String sql = "CREATE TABLE IF NOT EXISTS ";
+    //private static final String addRelation = "ALTER TABLE"
     private static DBUtil dbUtil;
     private static Connection connection = null;
     private static Statement statement = null;
@@ -24,7 +26,7 @@ public class CreatorTables {
         }
     }
 
-    public static void generateTables(Set<TableDB> tablesDB) {
+    public static void generateTables(Set<TableDB> tablesDB) throws Exception {
         List<String> tablesQuery = new ArrayList<>();
         for (TableDB tableDB :
                 tablesDB) {
@@ -51,9 +53,11 @@ public class CreatorTables {
         try {
             connection = dbUtil.getConnectionFromPool();
             Statement statement = connection.createStatement();
-            System.out.println(statement.executeUpdate(createTableQuery(tableDB)));
+            statement.executeUpdate(createTableQuery(tableDB));
             statement.close();
         } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -65,16 +69,41 @@ public class CreatorTables {
         return stringBuilder.toString();
     }
 
-    private static String createTableQuery(TableDB tableDB) {
+    private static String createTableQuery(TableDB tableDB) throws Exception {
         StringBuilder stringBuilder = new StringBuilder(sql);
         stringBuilder.append(tableDB.getTableName() + "(");
         stringBuilder.append(generatorBDFields(tableDB.getPrimaryKey()));
-        for (ColumnDB c :
-                tableDB.getColumnDBS()) {
-            stringBuilder.append(generatorBDFields(c));
+        if (tableDB.getColumnDBS()!=null) {
+            for (ColumnDB c :
+                    tableDB.getColumnDBS()) {
+                stringBuilder.append(generatorBDFields(c));
+            }
+        }
+        if (!tableDB.getForeignKey().isEmpty()) {
+            for (ForeignKey foreignKey :
+                    tableDB.getForeignKey()) {
+                stringBuilder.append(generatorForeignKeys(foreignKey));
+            }
         }
         stringBuilder.append(getFieldPrimaryKeyToDb(tableDB.getPrimaryKey()));
         stringBuilder.append(");");
+        return stringBuilder.toString();
+    }
+
+    private static String generatorForeignKeys(ForeignKey foreignKey) throws Exception {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(foreignKey.getName() + " ");
+        stringBuilder.append(foreignKey.getType());
+        if (foreignKey.getType() == "VARCHAR")
+            stringBuilder.append("(" + foreignKey.getLength() + ")");
+        if (!foreignKey.getNullable())
+                stringBuilder.append(" NOT NULL ");
+        stringBuilder.append(", ");
+        stringBuilder.append("FOREIGN KEY (");
+        stringBuilder.append(foreignKey.getName());
+        stringBuilder.append(") REFERENCES ");
+        stringBuilder.append(foreignKey.getNameTableTo()+"(");
+        stringBuilder.append(foreignKey.getNameColumnTo()+"),");
         return stringBuilder.toString();
     }
 

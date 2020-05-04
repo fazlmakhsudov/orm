@@ -1,5 +1,6 @@
 package com.practice.orm.annotation.entity.DBHandlers;
 
+import java.util.Objects;
 import java.util.Set;
 
 public class TableDB {
@@ -51,4 +52,20 @@ public class TableDB {
         this.primaryKey = primaryKey;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TableDB tableDB = (TableDB) o;
+        return Objects.equals(clazz, tableDB.clazz) &&
+                Objects.equals(TableName, tableDB.TableName) &&
+                Objects.equals(primaryKey, tableDB.primaryKey) &&
+                Objects.equals(columnDBS, tableDB.columnDBS) &&
+                Objects.equals(foreignKey, tableDB.foreignKey);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(clazz, TableName, primaryKey, columnDBS, foreignKey);
+    }
 }

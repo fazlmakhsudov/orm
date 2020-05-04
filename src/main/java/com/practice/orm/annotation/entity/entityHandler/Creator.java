@@ -16,14 +16,15 @@ public class Creator {
         }
     }
 
-    public static List<Class> getClasses() {
+    public static List<Class> getClasses() throws NotFoundAnnotatedClass {
         return Handler.getClasses();
     }
 
-    public static void build() throws NotFoundAnnotatedClass {
+    public static void build() throws Exception {
         if (Handler.getTablesDB() != null) {
             CreatorTables.generateTables(
                     Handler.getTablesDB());
+            CreatorTables.generateTables(Handler.getRelationalTables());
         } else {
             throw new NotFoundAnnotatedClass("Not found annotated classes");
         }
