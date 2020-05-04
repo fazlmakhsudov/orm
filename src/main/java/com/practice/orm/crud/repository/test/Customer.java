@@ -1,4 +1,4 @@
-package com.practice.orm.crud.repository.implementation;
+package com.practice.orm.crud.repository.test;
 
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;

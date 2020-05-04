@@ -1,29 +1,24 @@
 package com.practice.orm.crud.repository.implementation;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.lang.reflect.Field;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;
-import com.practice.orm.annotation.entity.Table;
 import com.practice.orm.annotation.entity.DBHandlers.TableDB;
 import com.practice.orm.annotation.entity.entityHandler.Handler;
+import com.practice.orm.annotation.generator.Generator;
 import com.practice.orm.annotation.generator.GeneratorHandler;
 import com.practice.orm.crud.repository.ICrudRepository;
+import com.practice.orm.crud.repository.test.Customer;
 import com.practice.orm.db.utilDao.entiry.DBUtil;
 import com.practice.orm.db.utilDao.entiry.DbKeys;
-import com.practice.orm.db.utilDao.entiry.Path;
 import com.practice.orm.db.utilDao.entiry.PropertyBundle;
 import com.practice.orm.db.utilDao.entiry.QueryFormer;
+
+import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.*;
 
 public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
@@ -90,12 +85,15 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
 	private String makeSqlQuery(C obj) {
 		Handler.addClass(obj.getClass());
+		GeneratorHandler.getInstance().setAnnotatedClasses(Handler.getClasses());
+		GeneratorHandler.getInstance().buildTablesCounterGenerator();
 		Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
 		String tableName = namesOfTables.get(obj.getClass());
 		queryFormer.setTablesAndColumns(Handler.getTable());
 		queryFormer.setPropertyBundle(propertyBundle);
 		queryFormer.formQueriesForAllTables();
 		String sqlQuery = queryFormer.getQuery(tableName, DbKeys.CREATE);
+		System.out.println(sqlQuery);
 		return sqlQuery;
 	}
 
@@ -118,15 +116,18 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	private void setFields(List<Field> fieldList, PreparedStatement preparedStatement, C obj)
 			throws IllegalArgumentException, IllegalAccessException, SQLException {
 		int fieldCounter = 1;
-		for (Field field : fieldList) {
-			// if (valueId == null) {
-			// continue;
-			// } else if (valueId != null) {
-			// preparedStatement.setObject(fieldCounter++, valueId);
-			// continue;
-			// }
-			preparedStatement.setObject(fieldCounter++, field.get(obj));
-
+		String tableName = Handler.getNamesTable(Handler.getClassesNamedEntity()).get(obj.getClass());
+		Object idValue = GeneratorHandler.getInstance().generateIdValue(tableName);
+		;
+		System.out.println(preparedStatement.toString());
+		for (int i = 0; i < fieldList.size(); i++) {
+			Field field = fieldList.get(i);
+			field.setAccessible(true);
+			if (i == 0) {
+				preparedStatement.setObject((i+1), idValue);
+				continue;
+			}
+			preparedStatement.setObject((i+1), field.get(obj));
 		}
 	}
 

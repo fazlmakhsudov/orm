@@ -5,7 +5,7 @@ import java.util.Map;
 
 public class QueryPatternMap {
     private static QueryPatternMap queryPatternMap;
-    private Map<String, Map<String, String>> bigPatternMap;
+    private final Map<String, Map<String, String>> bigPatternMap;
     private String dbName;
 
     private QueryPatternMap() {
@@ -28,7 +28,7 @@ public class QueryPatternMap {
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.UPDATE, "UPDATE *table* SET *set-block* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.DELETE, "DELETE FROM *table* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.READ_ALL, "SELECT * FROM *table*;");
-        bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.CREATE_TABLE, "CREATE TABLE *table*(*columns*);");
+        bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.CREATE_TABLE, "CREATE TABLE IF NOT EXISTS *table*(*columns*);");
     }
 
     public void setDbName(String dbName) {

@@ -64,7 +64,7 @@ public class CreateTables {
         }
     }
 
-    private static String getFieldPrimaryKeyToDb(ColumnForDB columnForDB) {
+    private static String getFieldPrimaryKeyToDb(ColumnDB columnForDB) {
         StringBuilder stringBuilder = new StringBuilder("PRIMARY KEY(");
         stringBuilder.append(columnForDB.getName());
         stringBuilder.append(")");
@@ -75,8 +75,8 @@ public class CreateTables {
         StringBuilder stringBuilder = new StringBuilder(sql);
         stringBuilder.append(" "+tableDB.getTableName() + "(");
         stringBuilder.append(generatorBDFields(tableDB.getPrimaryKey()));
-        for (ColumnForDB c :
-                tableDB.getColumnForDBS()) {
+        for (ColumnDB c :
+                tableDB.getColumnDBS()) {
             stringBuilder.append(generatorBDFields(c));
         }
         stringBuilder.append(getFieldPrimaryKeyToDb(tableDB.getPrimaryKey()));
@@ -85,7 +85,7 @@ public class CreateTables {
     }
 
 
-    private static String generatorBDFields(ColumnForDB columnForDB) {
+    private static String generatorBDFields(ColumnDB columnForDB) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(columnForDB.getName() + " ");
         stringBuilder.append(columnForDB.getType());
