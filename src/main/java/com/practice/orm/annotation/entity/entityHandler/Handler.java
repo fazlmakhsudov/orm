@@ -2,12 +2,10 @@ package com.practice.orm.annotation.entity.entityHandler;
 
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.DBHandlers.ColumnDB;
-import com.practice.orm.annotation.entity.DBHandlers.ForeignKey;
 import com.practice.orm.annotation.entity.DBHandlers.TableDB;
 import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
 import com.practice.orm.annotation.entity.entityHandler.exceptions.NotFoundAnnotatedClass;
-import com.practice.orm.annotation.generator.Generator;
 import com.practice.orm.annotation.relationalAnotation.JoinColumn;
 import com.practice.orm.annotation.relationalAnotation.ManyToMany;
 import com.practice.orm.annotation.relationalAnotation.ManyToOne;

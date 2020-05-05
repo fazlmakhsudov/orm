@@ -1,7 +1,5 @@
 package com.practice.orm.db.utilDao.entiry;
 
-import com.practice.orm.annotation.generator.GeneratorHandler;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
