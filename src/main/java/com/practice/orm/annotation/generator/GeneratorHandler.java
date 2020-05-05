@@ -96,4 +96,5 @@ public class GeneratorHandler {
 	public boolean isContainedTable(String tableName) {
 		return generatorHandler.tableCounterType.containsKey(tableName);
 	}
+
 }
