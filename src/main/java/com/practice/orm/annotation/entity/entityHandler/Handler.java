@@ -262,14 +262,14 @@ public class Handler {
                 tableDB.setTableName(field.getAnnotation(ManyToMany.class).nameTable());
             Set<ForeignKey> foreignKeys = new HashSet<>();
             if (manyToMany.joinColumn().name().length() == 0) {
-                foreignKeys.add(createForeignKey(clazz, ""));
+                foreignKeys.add(createForeignKey(clazz, "",tableDB.getTableName()));
             } else {
-                foreignKeys.add(createForeignKey(clazz, manyToMany.joinColumn().name()));
+                foreignKeys.add(createForeignKey(clazz, manyToMany.joinColumn().name(),tableDB.getTableName()));
             }
             if (manyToMany.inverseJoinColumn().name().length() == 0) {
-                foreignKeys.add(createForeignKey(genericType, ""));
+                foreignKeys.add(createForeignKey(genericType, "",tableDB.getTableName()));
             } else {
-                foreignKeys.add(createForeignKey(genericType, manyToMany.inverseJoinColumn().name()));
+                foreignKeys.add(createForeignKey(genericType, manyToMany.inverseJoinColumn().name(),tableDB.getTableName()));
             }
             if (manyToMany.primaryKey().length() == 0) {
                 tableDB.setPrimaryKey(setNamePrimaryKey(clazz, tableDB.getTableName()));
@@ -313,7 +313,7 @@ public class Handler {
     }
 
 
-    private static ForeignKey createForeignKey(Class<?> clazz, String name) throws Exception {
+    private static ForeignKey createForeignKey(Class<?> clazz, String name,String nameTable) throws Exception {
         ColumnDB columnDB = getId(clazz);
         ForeignKey foreignKey = new ForeignKey();
         foreignKey.setField(columnDB.getField());
@@ -321,13 +321,14 @@ public class Handler {
         foreignKey.setNullable(columnDB.getNullable());
         foreignKey.setLength(columnDB.getLength());
         foreignKey.setClazz(clazz);
-        if (name.length() == 0) {
+        if (name.isEmpty()) {
             foreignKey.setName(columnDB.getName());
         } else {
             foreignKey.setName(name);
         }
         foreignKey.setNameTableTo(getNameTable(clazz));
         foreignKey.setNameColumnTo(columnDB.getName());
+        foreignKey.setNameTableFrom(nameTable);
         return foreignKey;
     }
 

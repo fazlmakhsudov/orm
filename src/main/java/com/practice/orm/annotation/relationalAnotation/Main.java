@@ -13,7 +13,7 @@ import java.util.Set;
 public class Main {
     public static void main(String[] args) throws Exception {
         Creator.addAnnotatedClass(User.class);
-
+        Creator.addAnnotatedClass(Cat.class);
         Creator.addAnnotatedClass(Book.class);
         Set<TableDB> tablesDB = Handler.getTablesDB();
         for (TableDB table :

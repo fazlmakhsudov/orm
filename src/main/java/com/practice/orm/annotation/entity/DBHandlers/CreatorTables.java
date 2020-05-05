@@ -115,7 +115,7 @@ public class CreatorTables {
         StringBuilder stringBuilder = new StringBuilder(addRelation);
         stringBuilder.append(foreignKey.getNameTableFrom());
         stringBuilder.append(" ADD COLUMN ");
-        stringBuilder.append(foreignKey.getNameColumnTo()+" ");
+        stringBuilder.append(foreignKey.getName()+" ");
         stringBuilder.append(foreignKey.getType());
         if (foreignKey.getType() == "VARCHAR")
             stringBuilder.append("(" + foreignKey.getLength() + ")");

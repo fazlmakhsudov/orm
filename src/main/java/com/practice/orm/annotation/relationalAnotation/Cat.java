@@ -3,24 +3,19 @@ package com.practice.orm.annotation.relationalAnotation;
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;
 import com.practice.orm.annotation.entity.Id;
-import com.practice.orm.annotation.entity.Table;
 
 import java.util.List;
 
 @Entity
-@Table(name = "usr")
-public class User {
+public class Cat {
     @Id
     private Integer id;
 
-    @Column
+    @Column(name = "klikuha")
     private String name;
 
-    @ManyToMany(primaryKey = "qwe",
-    joinColumn = @JoinColumn(name = "joinqw"),
-    inverseJoinColumn = @JoinColumn(name = "invers"))
-    private List<Cat> cats;
-
-    @OneToMany
+    @ManyToOne
     private List<Book> books;
+
+
 }
