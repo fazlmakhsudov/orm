@@ -9,7 +9,6 @@ public class ForeignKey extends ColumnDB {
     private String NameColumnTo;
     private String NameTableTo;
     private String NameTableFrom;
-    private Type type;
 
     public Class<?> getClazz() {
         return clazz;

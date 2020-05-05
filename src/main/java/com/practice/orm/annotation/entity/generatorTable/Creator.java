@@ -1,8 +1,9 @@
-package com.practice.orm.annotation.entity.entityHandler;
+package com.practice.orm.annotation.entity.generatorTable;
 
-import com.practice.orm.annotation.entity.DBHandlers.CreatorTables;
 import com.practice.orm.annotation.entity.Entity;
+import com.practice.orm.annotation.entity.entityHandler.Handler;
 import com.practice.orm.annotation.entity.entityHandler.exceptions.NotFoundAnnotatedClass;
+import com.practice.orm.annotation.entity.generatorTable.GeneratorTable;
 
 import java.util.List;
 
@@ -22,12 +23,7 @@ public class Creator {
 
     public static void build() throws Exception {
         if (Handler.getRelationalTables() != null) {
-            CreatorTables.generateTables(
-                    Handler.getRelationalTables());
-            CreatorTables.generateForeignKeys(Handler.getRelationalTables());
-            CreatorTables.generateRelation(Handler.getRelationalTables());
-
-
+            GeneratorTable.generate(Handler.getRelationalTables());
         } else {
             throw new NotFoundAnnotatedClass("Not found annotated classes");
         }

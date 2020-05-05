@@ -8,8 +8,9 @@ import java.util.List;
 
 @Entity
 public class Cat {
+
     @Id
-    private Integer id;
+    private Long id;
 
     @Column(name = "klikuha")
     private String name;

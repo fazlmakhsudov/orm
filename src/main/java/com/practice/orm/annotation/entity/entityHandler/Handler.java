@@ -30,18 +30,14 @@ public class Handler {
         return relationalTables;
     }
 
-
-    public static void addRelationTable(TableDB tableDB)
-    {
+    public static void addRelationTable(TableDB tableDB) {
         if (!relationalTables.contains(tableDB))
-                relationalTables.add(tableDB);
+            relationalTables.add(tableDB);
     }
-
 
     public static void addClass(Class<?> clazz) {
         classes.add(clazz);
     }
-
 
     public static List<Class> getClasses() throws NotFoundAnnotatedClass {
         if (classes.isEmpty()) {
@@ -92,7 +88,6 @@ public class Handler {
         return tableDB;
     }
 
-
     public static Set<TableDB> getTablesDB() {
         Set<TableDB> tableDBS = new HashSet<>();
         for (Class<?> clazz : getClassesNamedEntity()) {
@@ -101,13 +96,6 @@ public class Handler {
             } else {
                 relationalTables.add(getTableDB(clazz));
             }
-//            if (getTableDB(clazz).getForeignKey()==null)
-//            {
-//                relationalTables.add(getTableDB(clazz));
-//            }
-//            else {
-//                tableDBS.add(getTableDB(clazz));
-//            }
         }
         return relationalTables;
     }
@@ -211,9 +199,6 @@ public class Handler {
         return stringBuilder.toString();
     }
 
-
-
-
     public static ColumnDB setNamePrimaryKey(Class<?> clazz, String name) throws Exception {
         ColumnDB id = getId(clazz);
         if (!name.isEmpty()) {
@@ -265,5 +250,4 @@ public class Handler {
                 return null;
         }
     }
-
 }

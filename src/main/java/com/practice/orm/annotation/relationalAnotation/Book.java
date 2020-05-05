@@ -16,8 +16,8 @@ public class Book {
     @Column(name = "genre")
     private String genre;
 
-//    @OneToMany
-//    private List<User> users;
+    @OneToMany
+    private List<User> users;
 
 
 

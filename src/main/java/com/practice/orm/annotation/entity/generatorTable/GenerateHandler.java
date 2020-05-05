@@ -1,6 +1,8 @@
-package com.practice.orm.annotation.entity.DBHandlers;
+package com.practice.orm.annotation.entity.generatorTable;
 
-import com.practice.orm.annotation.entity.entityHandler.Handler;
+import com.practice.orm.annotation.entity.DBHandlers.ColumnDB;
+import com.practice.orm.annotation.entity.DBHandlers.ForeignKey;
+import com.practice.orm.annotation.entity.DBHandlers.TableDB;
 import com.practice.orm.db.utilDao.entiry.DBUtil;
 import com.practice.orm.db.utilDao.entiry.PropertyBundle;
 
@@ -11,9 +13,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class CreatorTables {
+final public class  GenerateHandler {
+
     private static final String sql = "CREATE TABLE IF NOT EXISTS ";
     private static final String addRelation = "ALTER TABLE ";
+    private static final String NOT_NULL = " NOT NULL ";
+    private static final String DROP_TABLE = "DROP TABLE IF EXISTS ";
     private static DBUtil dbUtil;
     private static Connection connection = null;
     private static Statement statement = null;
@@ -27,56 +32,26 @@ public class CreatorTables {
     }
 
     public static void generateTables(Set<TableDB> tablesDB) throws Exception {
-        List<String> tablesQuery = new ArrayList<>();
+        List<String> strings = new ArrayList<>();
         for (TableDB tableDB :
                 tablesDB) {
-            tablesQuery.add(createTableQuery(tableDB));
+            strings.add(createTableQuery(tableDB));
         }
-        try {
-            connection = dbUtil.getConnectionFromPool();
-            Statement statement = connection.createStatement();
-            connection.setAutoCommit(false);
-            for (String s :
-                    tablesQuery) {
-                statement.executeUpdate(s);
-            }
-            connection.setAutoCommit(true);
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        createQuery(strings);
     }
 
     public static void generateRelation(Set<TableDB> tableDBS) throws Exception {
-        List<String> relation = new ArrayList<>();
+        List<String> strings = new ArrayList<>();
         for (TableDB tableDB :
-                tableDBS
-        ) {
+                tableDBS) {
             if (!tableDB.getForeignKey().isEmpty()) {
-                relation.add(getQueryRelation(tableDB.getForeignKey(),tableDB.getTableName()));
+                strings.add(getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()));
             }
         }
-        try {
-            connection = dbUtil.getConnectionFromPool();
-            Statement statement = connection.createStatement();
-            connection.setAutoCommit(false);
-            for (String s :
-                    relation) {
-                statement.executeUpdate(s);
-            }
-            connection.setAutoCommit(true);
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        createQuery(strings);
     }
 
-    public static void generateForeignKeys(Set<TableDB> tableDBS)
-    {
+    public static void generateForeignKeys(Set<TableDB> tableDBS) {
         List<String> strings = new ArrayList<>();
         for (TableDB tableDB :
                 tableDBS
@@ -85,6 +60,18 @@ public class CreatorTables {
                 strings.add(getForeignKeys(tableDB.getForeignKey()));
             }
         }
+        createQuery(strings);
+    }
+
+    public static void dropTables(Set<TableDB> tableDBS) {
+        List<String> strings = new ArrayList<>();
+        for (TableDB tableDB : tableDBS) {
+            strings.add(getQueryDrop(tableDB));
+        }
+        createQuery(strings);
+    }
+
+    private static void createQuery(List<String> strings) {
         try {
             connection = dbUtil.getConnectionFromPool();
             Statement statement = connection.createStatement();
@@ -95,55 +82,44 @@ public class CreatorTables {
             }
             connection.setAutoCommit(true);
             statement.close();
+            dbUtil.returnConnectionToPool(connection);
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public static String getForeignKeys(Set<ForeignKey> foreignKeys)
-    {
+
+    private static String getForeignKeys(Set<ForeignKey> foreignKeys) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (ForeignKey foreignKey:
-             foreignKeys) {
+        for (ForeignKey foreignKey :
+                foreignKeys) {
             stringBuilder.append(generateFK(foreignKey));
         }
         return stringBuilder.toString();
     }
-    public static String generateFK(ForeignKey foreignKey)
-    {
+
+    private static String generateFK(ForeignKey foreignKey) {
         StringBuilder stringBuilder = new StringBuilder(addRelation);
         stringBuilder.append(foreignKey.getNameTableFrom());
         stringBuilder.append(" ADD COLUMN ");
-        stringBuilder.append(foreignKey.getName()+" ");
+        stringBuilder.append(foreignKey.getName() + " ");
         stringBuilder.append(foreignKey.getType());
         if (foreignKey.getType() == "VARCHAR")
             stringBuilder.append("(" + foreignKey.getLength() + ")");
         if (!foreignKey.getNullable())
-            stringBuilder.append(" NOT NULL ");
+            stringBuilder.append(NOT_NULL);
         stringBuilder.append(";");
         return stringBuilder.toString();
     }
-    public static String  getQueryRelation(Set<ForeignKey> foreignKeys, String tableDB) throws Exception {
-        StringBuilder strings = new StringBuilder();
-            for (ForeignKey foreignKey :
-                    foreignKeys) {
-                strings.append(generatorForeignKeys(foreignKey,tableDB));
-            }
-        return strings.toString();
-    }
 
-    public static void generateTable(TableDB tableDB) {
-        try {
-            connection = dbUtil.getConnectionFromPool();
-            Statement statement = connection.createStatement();
-            statement.executeUpdate(createTableQuery(tableDB));
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+    private static String getQueryRelation(Set<ForeignKey> foreignKeys, String tableDB) throws Exception {
+        StringBuilder strings = new StringBuilder();
+        for (ForeignKey foreignKey :
+                foreignKeys) {
+            strings.append(generatorForeignKeys(foreignKey, tableDB));
         }
+        return strings.toString();
     }
 
     private static String getFieldPrimaryKeyToDb(ColumnDB columnDB) {
@@ -157,7 +133,7 @@ public class CreatorTables {
         StringBuilder stringBuilder = new StringBuilder(sql);
         stringBuilder.append(tableDB.getTableName() + "(");
         stringBuilder.append(generatorBDFields(tableDB.getPrimaryKey()));
-        if (tableDB.getColumnDBS()!=null) {
+        if (tableDB.getColumnDBS() != null) {
             for (ColumnDB c :
                     tableDB.getColumnDBS()) {
                 stringBuilder.append(generatorBDFields(c));
@@ -168,22 +144,23 @@ public class CreatorTables {
         return stringBuilder.toString();
     }
 
-    private static String generatorForeignKeys(ForeignKey foreignKey,String tableName) throws Exception {
+    private static String generatorForeignKeys(ForeignKey foreignKey, String tableName) throws Exception {
         StringBuilder stringBuilder = new StringBuilder(addRelation);
         stringBuilder.append(foreignKey.getNameTableFrom());
         stringBuilder.append(" ADD ");
         stringBuilder.append(" FOREIGN KEY (");
         stringBuilder.append(foreignKey.getName());
         stringBuilder.append(") REFERENCES ");
-        stringBuilder.append(foreignKey.getNameTableTo()+"(");
-        stringBuilder.append(foreignKey.getNameColumnTo()+") ON UPDATE CASCADE ON DELETE CASCADE;");
+        stringBuilder.append(foreignKey.getNameTableTo());
+        stringBuilder.append("(");
+        stringBuilder.append(foreignKey.getNameColumnTo());
+        stringBuilder.append(") ON UPDATE CASCADE ON DELETE CASCADE;");
         return stringBuilder.toString();
     }
 
-    private static String generatorColumnByForeignKey(ForeignKey foreignKey)
-    {
+    private static String generatorColumnByForeignKey(ForeignKey foreignKey) {
         StringBuilder stringBuilder = new StringBuilder(sql);
-        stringBuilder.append(foreignKey.getNameTableFrom()+" ");
+        stringBuilder.append(foreignKey.getNameTableFrom() + " ");
         stringBuilder.append("ADD COLUMN ");
         stringBuilder.append(foreignKey.getName() + " ");
         stringBuilder.append(foreignKey.getType());
@@ -193,6 +170,7 @@ public class CreatorTables {
             stringBuilder.append(" NOT NULL ");
         return stringBuilder.toString();
     }
+
     private static String generatorBDFields(ColumnDB columnDB) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(columnDB.getName() + " ");
@@ -200,8 +178,15 @@ public class CreatorTables {
         if (columnDB.getType() == "VARCHAR")
             stringBuilder.append("(" + columnDB.getLength() + ")");
         if (!columnDB.getNullable())
-            stringBuilder.append(" NOT NULL ");
+            stringBuilder.append(NOT_NULL);
         stringBuilder.append(",");
+        return stringBuilder.toString();
+    }
+
+    private static String getQueryDrop(TableDB tableDB) {
+        StringBuilder stringBuilder = new StringBuilder(DROP_TABLE);
+        stringBuilder.append(tableDB.getTableName());
+        stringBuilder.append(" cascade;");
         return stringBuilder.toString();
     }
 }
