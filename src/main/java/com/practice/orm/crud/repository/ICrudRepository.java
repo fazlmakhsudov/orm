@@ -7,7 +7,7 @@ public interface ICrudRepository<C, Integer> {
 
 	C find(int id, Class clazz);
 
-	boolean modify(int id, Class clazz);
+	boolean modify(int id, C object);
 
 	boolean remove(C object);
 

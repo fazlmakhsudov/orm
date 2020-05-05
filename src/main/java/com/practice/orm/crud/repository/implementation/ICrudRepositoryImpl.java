@@ -45,6 +45,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
 	@Override
 	public C add(C object) {
+		//ошибка в порядке значений для преп стат
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
 			String SqlQuery = makeSqlQuery(object);
@@ -84,14 +85,30 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		} catch (Exception Ex) {
 			Ex.printStackTrace();
 		}
-		System.out.println(foundObject.toString());
 		return foundObject;
 	}
 
 	@Override
-	public boolean modify(int id, Class clazz) {
-		C objectToUpdate = find(id, clazz);
-		System.out.println(objectToUpdate.toString());
+	public boolean modify(int id, C object) {
+		try {
+			Connection connection = dbUtil.getConnectionFromPool();
+			C objectToUpdate = find(id, object.getClass());
+			String sqlQuery = makeSqlQuery(object.getClass(), DbKeys.UPDATE);
+			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+			List<Field> listOfFields = makeListOfFields(objectToUpdate);
+			for (int i = 0; i < listOfFields.size(); i++) {
+				Field field = listOfFields.get(i);
+				field.setAccessible(true);
+				preparedStatement.setObject((i + 1), field.get(objectToUpdate));
+			}
+			int rows = preparedStatement.executeUpdate();
+			if (rows > 0) {
+				System.out.println("A new object has been modified successfully");
+			}
+			dbUtil.returnConnectionToPool(connection);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return false;
 	}
 
