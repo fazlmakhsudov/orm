@@ -1,12 +1,15 @@
 package com.practice.orm.annotation.entity.DBHandlers;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 public class ForeignKey extends ColumnDB {
     private Class<?> clazz;
     private String description;
     private String NameColumnTo;
     private String NameTableTo;
+    private String NameTableFrom;
+    private Type type;
 
     public Class<?> getClazz() {
         return clazz;
@@ -72,5 +75,31 @@ public class ForeignKey extends ColumnDB {
         this.description = description;
         NameColumnTo = nameColumnTo;
         NameTableTo = nameTableTo;
+    }
+
+    public String getNameTableFrom() {
+        return NameTableFrom;
+    }
+
+    public void setNameTableFrom(String nameTableFrom) {
+        NameTableFrom = nameTableFrom;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ForeignKey that = (ForeignKey) o;
+        return Objects.equals(clazz, that.clazz) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(NameColumnTo, that.NameColumnTo) &&
+                Objects.equals(NameTableTo, that.NameTableTo) &&
+                Objects.equals(NameTableFrom, that.NameTableFrom);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), clazz, description, NameColumnTo, NameTableTo, NameTableFrom);
     }
 }

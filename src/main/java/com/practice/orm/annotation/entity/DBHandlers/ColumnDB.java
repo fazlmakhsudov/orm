@@ -1,6 +1,7 @@
 package com.practice.orm.annotation.entity.DBHandlers;
 
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 public class ColumnDB {
 
@@ -69,4 +70,21 @@ public class ColumnDB {
         this.field = field;
     }
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ColumnDB columnDB = (ColumnDB) o;
+        return length == columnDB.length &&
+                Objects.equals(field, columnDB.field) &&
+                Objects.equals(name, columnDB.name) &&
+                Objects.equals(type, columnDB.type) &&
+                Objects.equals(nullable, columnDB.nullable);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(field, name, type, length, nullable);
+    }
 }

@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class CreatorTables {
     private static final String sql = "CREATE TABLE IF NOT EXISTS ";
-    //private static final String addRelation = "ALTER TABLE"
+    private static final String addRelation = "ALTER TABLE ";
     private static DBUtil dbUtil;
     private static Connection connection = null;
     private static Statement statement = null;
@@ -49,6 +49,90 @@ public class CreatorTables {
         }
     }
 
+    public static void generateRelation(Set<TableDB> tableDBS) throws Exception {
+        List<String> relation = new ArrayList<>();
+        for (TableDB tableDB :
+                tableDBS
+        ) {
+            if (!tableDB.getForeignKey().isEmpty()) {
+                relation.add(getQueryRelation(tableDB.getForeignKey(),tableDB.getTableName()));
+            }
+        }
+        try {
+            connection = dbUtil.getConnectionFromPool();
+            Statement statement = connection.createStatement();
+            connection.setAutoCommit(false);
+            for (String s :
+                    relation) {
+                statement.executeUpdate(s);
+            }
+            connection.setAutoCommit(true);
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void generateForeignKeys(Set<TableDB> tableDBS)
+    {
+        List<String> strings = new ArrayList<>();
+        for (TableDB tableDB :
+                tableDBS
+        ) {
+            if (!tableDB.getForeignKey().isEmpty()) {
+                strings.add(getForeignKeys(tableDB.getForeignKey()));
+            }
+        }
+        try {
+            connection = dbUtil.getConnectionFromPool();
+            Statement statement = connection.createStatement();
+            connection.setAutoCommit(false);
+            for (String s :
+                    strings) {
+                statement.executeUpdate(s);
+            }
+            connection.setAutoCommit(true);
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public static String getForeignKeys(Set<ForeignKey> foreignKeys)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (ForeignKey foreignKey:
+             foreignKeys) {
+            stringBuilder.append(generateFK(foreignKey));
+        }
+        return stringBuilder.toString();
+    }
+    public static String generateFK(ForeignKey foreignKey)
+    {
+        StringBuilder stringBuilder = new StringBuilder(addRelation);
+        stringBuilder.append(foreignKey.getNameTableFrom());
+        stringBuilder.append(" ADD COLUMN ");
+        stringBuilder.append(foreignKey.getNameColumnTo()+" ");
+        stringBuilder.append(foreignKey.getType());
+        if (foreignKey.getType() == "VARCHAR")
+            stringBuilder.append("(" + foreignKey.getLength() + ")");
+        if (!foreignKey.getNullable())
+            stringBuilder.append(" NOT NULL ");
+        stringBuilder.append(";");
+        return stringBuilder.toString();
+    }
+    public static String  getQueryRelation(Set<ForeignKey> foreignKeys, String tableDB) throws Exception {
+        StringBuilder strings = new StringBuilder();
+            for (ForeignKey foreignKey :
+                    foreignKeys) {
+                strings.append(generatorForeignKeys(foreignKey,tableDB));
+            }
+        return strings.toString();
+    }
+
     public static void generateTable(TableDB tableDB) {
         try {
             connection = dbUtil.getConnectionFromPool();
@@ -79,34 +163,36 @@ public class CreatorTables {
                 stringBuilder.append(generatorBDFields(c));
             }
         }
-        if (!tableDB.getForeignKey().isEmpty()) {
-            for (ForeignKey foreignKey :
-                    tableDB.getForeignKey()) {
-                stringBuilder.append(generatorForeignKeys(foreignKey));
-            }
-        }
         stringBuilder.append(getFieldPrimaryKeyToDb(tableDB.getPrimaryKey()));
         stringBuilder.append(");");
         return stringBuilder.toString();
     }
 
-    private static String generatorForeignKeys(ForeignKey foreignKey) throws Exception {
-        StringBuilder stringBuilder = new StringBuilder();
+    private static String generatorForeignKeys(ForeignKey foreignKey,String tableName) throws Exception {
+        StringBuilder stringBuilder = new StringBuilder(addRelation);
+        stringBuilder.append(tableName);
+        stringBuilder.append(" ADD ");
+        stringBuilder.append(" FOREIGN KEY (");
+        stringBuilder.append(foreignKey.getName());
+        stringBuilder.append(") REFERENCES ");
+        stringBuilder.append(foreignKey.getNameTableTo()+"(");
+        stringBuilder.append(foreignKey.getNameColumnTo()+") ON UPDATE CASCADE ON DELETE CASCADE;");
+        return stringBuilder.toString();
+    }
+
+    private static String generatorColumnByForeignKey(ForeignKey foreignKey)
+    {
+        StringBuilder stringBuilder = new StringBuilder(sql);
+        stringBuilder.append(foreignKey.getNameTableFrom()+" ");
+        stringBuilder.append("ADD COLUMN ");
         stringBuilder.append(foreignKey.getName() + " ");
         stringBuilder.append(foreignKey.getType());
         if (foreignKey.getType() == "VARCHAR")
             stringBuilder.append("(" + foreignKey.getLength() + ")");
         if (!foreignKey.getNullable())
-                stringBuilder.append(" NOT NULL ");
-        stringBuilder.append(", ");
-        stringBuilder.append("FOREIGN KEY (");
-        stringBuilder.append(foreignKey.getName());
-        stringBuilder.append(") REFERENCES ");
-        stringBuilder.append(foreignKey.getNameTableTo()+"(");
-        stringBuilder.append(foreignKey.getNameColumnTo()+"),");
+            stringBuilder.append(" NOT NULL ");
         return stringBuilder.toString();
     }
-
     private static String generatorBDFields(ColumnDB columnDB) {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(columnDB.getName() + " ");

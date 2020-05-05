@@ -7,15 +7,16 @@ import com.practice.orm.annotation.entity.DBHandlers.TableDB;
 import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
 import com.practice.orm.annotation.entity.entityHandler.exceptions.NotFoundAnnotatedClass;
+import com.practice.orm.annotation.generator.Generator;
 import com.practice.orm.annotation.relationalAnotation.JoinColumn;
 import com.practice.orm.annotation.relationalAnotation.ManyToMany;
 import com.practice.orm.annotation.relationalAnotation.ManyToOne;
+import com.practice.orm.annotation.relationalAnotation.OneToMany;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.sql.Types;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,7 +42,6 @@ public class Handler {
         }
     }
 
-
     public static Set<Class<?>> getClassesNamedEntity() {
         Set<Class<?>> setClasses = new HashSet<>();
         for (Class<?> clazz :
@@ -53,7 +53,7 @@ public class Handler {
 
     public static Map<String, List<String>> getTable() {
         Map<String, List<String>> table = new HashMap<>();
-        for (TableDB t : getTablesDB()) {
+        for (TableDB t : getRelationalTables()) {
             List<String> columnsName = new ArrayList<>();
             columnsName.add(t.getPrimaryKey().getName());
             for (ColumnDB c : t.getColumnDBS()) {
@@ -69,6 +69,11 @@ public class Handler {
         tableDB.setColumnDBS(getColumns(clazz));
         try {
             tableDB.setPrimaryKey(getId(clazz));
+            if (tableDB.getPrimaryKey().getField().isAnnotationPresent(Generator.class)) {
+                tableDB.setPKAutoIncrement(true);
+            } else {
+                tableDB.setPKAutoIncrement(false);
+            }
             tableDB.setForeignKey(getForeignKey(clazz));
         } catch (Exception e) {
             e.printStackTrace();
@@ -81,9 +86,12 @@ public class Handler {
 
     public static Set<TableDB> getTablesDB() {
         Set<TableDB> tableDBS = new HashSet<>();
-        Set<Class<?>> classes = getClassesNamedEntity();
-        for (Class<?> clazz : classes) {
-            tableDBS.add(getTableDB(clazz));
+        for (Class<?> clazz : getClassesNamedEntity()) {
+            if (relationalTables.contains(getTableDB(clazz))) {
+                continue;
+            } else {
+                relationalTables.add(getTableDB(clazz));
+            }
 //            if (getTableDB(clazz).getForeignKey()==null)
 //            {
 //                relationalTables.add(getTableDB(clazz));
@@ -92,7 +100,7 @@ public class Handler {
 //                tableDBS.add(getTableDB(clazz));
 //            }
         }
-        return tableDBS;
+        return relationalTables;
     }
 
     public static Map<Class<?>, String> getNamesTable(Set<Class<?>> classes) {
@@ -199,69 +207,20 @@ public class Handler {
         Set<ForeignKey> foreignKey = new HashSet<>();
         for (Field field : declaredFields) {
             if (field.isAnnotationPresent(ManyToOne.class)) {
-                foreignKey.add(getForeignKeyForManyToOne(field));
+                foreignKey.add(getForeignKeyForManyToOne(field, clazz));
             }
-            if (field.isAnnotationPresent(ManyToMany.class))
-            {
-                relationalTables.add(getForeignKeyForManyToMany(field,clazz));
+            if (field.isAnnotationPresent(ManyToMany.class)) {
+                relationalTables.add(getForeignKeyForManyToMany(field, clazz));
+            }
+            if (field.isAnnotationPresent(OneToMany.class)) {
+                foreignKey.add(getForeignKeyForOneToMany(field,clazz));
             }
 
         }
         return foreignKey;
     }
 
-    public static TableDB getForeignKeyForManyToMany(Field field,Class<?> clazz) throws Exception {
-        TableDB tableDB = new TableDB();
-        Class genericType=getTypeClass(field);
-        if (field.isAnnotationPresent(ManyToMany.class))
-        {
-            tableDB.setTableName(clazz.getSimpleName()+"_"+genericType.getSimpleName());
-            tableDB.setPrimaryKey(setNamePrimaryKey(clazz,tableDB.getTableName()));
-            Set<ForeignKey> foreignKeys = new HashSet<>();
-            foreignKeys.add(createForeignKey(clazz,""));
-            foreignKeys.add(createForeignKey(genericType,""));
-            tableDB.setForeignKey(foreignKeys);
-        }
-        return tableDB;
-    }
-    private static ForeignKey createForeignKey(Class<?> clazz,String name) throws Exception {
-        ColumnDB columnDB = getId(clazz);
-        ForeignKey foreignKey = new ForeignKey();
-        foreignKey.setField(columnDB.getField());
-        foreignKey.setType(columnDB.getType());
-        foreignKey.setNullable(columnDB.getNullable());
-        foreignKey.setLength(columnDB.getLength());
-        foreignKey.setClazz(clazz);
-        foreignKey.setName(columnDB.getName());
-        foreignKey.setNameTableTo(getNameTable(clazz));
-        if (!name.isEmpty()) {
-            foreignKey.setNameColumnTo(name);
-        }
-        else
-        {
-            foreignKey.setNameColumnTo(columnDB.getName());
-        }
-        return foreignKey;
-    }
-
-    private static ColumnDB setNamePrimaryKey(Class<?> clazz, String name) throws Exception {
-        ColumnDB id = getId(clazz);
-        id.setName(name+"_id");
-        return id;
-
-
-    }
-    private static Class getTypeClass(Field field)
-    {
-        Class type;
-        if (Collection.class.isAssignableFrom(field.getType()))
-            type = getGenericType(field.getGenericType(), 0);
-         else
-            type = field.getType();
-         return type;
-    }
-
-    private static ForeignKey getForeignKeyForManyToOne(Field field) throws Exception {
+    public static ForeignKey getForeignKeyForOneToMany(Field field,Class<?> clazz) throws Exception {
         ForeignKey foreignKey = new ForeignKey();
         foreignKey.setClazz(getTypeClass(field));
 //        if (Collection.class.isAssignableFrom(field.getType())) {
@@ -269,28 +228,128 @@ public class Handler {
 //        } else {
 //            foreignKey.setClazz(field.getType());
 //        }
-        if (field.getAnnotation(ManyToOne.class).mappedBy()== "") {
+        if (field.getAnnotation(OneToMany.class).mappedBy().length() == 0) {
             if (field.isAnnotationPresent(JoinColumn.class)) {
-                if (field.getAnnotation(JoinColumn.class).name() == "") {
-                    foreignKey.setName(field.getName() + "_fk");
+                if (field.getAnnotation(JoinColumn.class).name().length() == 0) {
+                    foreignKey.setName(getId(clazz).getName());
                 } else {
                     foreignKey.setName(field.getAnnotation(JoinColumn.class).name());
                 }
             } else {
                 foreignKey.setName(getId(foreignKey.getClazz()).getName());
             }
+        } else {
+            foreignKey.setName(field.getAnnotation(OneToMany.class).mappedBy());
         }
-        else
-        {
-            foreignKey.setName(field.getName());
+        foreignKey.setType(getId(clazz).getType());
+        foreignKey.setDescription(field.getType().getSimpleName());
+        foreignKey.setField(field);
+        foreignKey.setNameColumnTo(getId(clazz).getName());
+        foreignKey.setNameTableTo(getNameTable(clazz));
+        foreignKey.setNameTableFrom(getNameTable(foreignKey.getClazz()));
+        foreignKey.setNullable(false);
+        return foreignKey;
+    }
+
+    private static TableDB getForeignKeyForManyToMany(Field field, Class<?> clazz) throws Exception {
+        TableDB tableDB = new TableDB();
+        Class genericType = getTypeClass(field);
+        if (field.isAnnotationPresent(ManyToMany.class)) {
+            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+            if (manyToMany.nameTable().length() == 0) {
+                tableDB.setTableName(clazz.getSimpleName() + "_" + genericType.getSimpleName());
+            } else
+                tableDB.setTableName(field.getAnnotation(ManyToMany.class).nameTable());
+            Set<ForeignKey> foreignKeys = new HashSet<>();
+            if (manyToMany.joinColumn().name().length() == 0) {
+                foreignKeys.add(createForeignKey(clazz, ""));
+            } else {
+                foreignKeys.add(createForeignKey(clazz, manyToMany.joinColumn().name()));
+            }
+            if (manyToMany.inverseJoinColumn().name().length() == 0) {
+                foreignKeys.add(createForeignKey(genericType, ""));
+            } else {
+                foreignKeys.add(createForeignKey(genericType, manyToMany.inverseJoinColumn().name()));
+            }
+            if (manyToMany.primaryKey().length() == 0) {
+                tableDB.setPrimaryKey(setNamePrimaryKey(clazz, tableDB.getTableName()));
+            } else {
+                tableDB.setPrimaryKey(setNamePrimaryKey(clazz, manyToMany.primaryKey()));
+            }
+            tableDB.setForeignKey(foreignKeys);
+        }
+        return tableDB;
+    }
+
+    private static ForeignKey getForeignKeyForManyToOne(Field field, Class<?> clazz) throws Exception {
+        ForeignKey foreignKey = new ForeignKey();
+        foreignKey.setClazz(getTypeClass(field));
+//        if (Collection.class.isAssignableFrom(field.getType())) {
+//            foreignKey.setClazz(getGenericType(field.getGenericType(), 0));
+//        } else {
+//            foreignKey.setClazz(field.getType());
+//        }
+        if (field.getAnnotation(ManyToOne.class).mappedBy().length() == 0) {
+            if (field.isAnnotationPresent(JoinColumn.class)) {
+                if (field.getAnnotation(JoinColumn.class).name().length() == 0) {
+                    foreignKey.setName(getId(foreignKey.getClazz()).getName());
+                } else {
+                    foreignKey.setName(field.getAnnotation(JoinColumn.class).name());
+                }
+            } else {
+                foreignKey.setName(getId(foreignKey.getClazz()).getName());
+            }
+        } else {
+            foreignKey.setName(field.getAnnotation(ManyToOne.class).mappedBy());
         }
         foreignKey.setNameTableTo(getNameTable(foreignKey.getClazz()));
         foreignKey.setType(getId(foreignKey.getClazz()).getType());
         foreignKey.setDescription(field.getType().getSimpleName());
         foreignKey.setNameColumnTo(getId(foreignKey.getClazz()).getName());
         foreignKey.setField(field);
+        foreignKey.setNameTableFrom(getNameTable(clazz));
         foreignKey.setNullable(false);
         return foreignKey;
+    }
+
+
+    private static ForeignKey createForeignKey(Class<?> clazz, String name) throws Exception {
+        ColumnDB columnDB = getId(clazz);
+        ForeignKey foreignKey = new ForeignKey();
+        foreignKey.setField(columnDB.getField());
+        foreignKey.setType(columnDB.getType());
+        foreignKey.setNullable(columnDB.getNullable());
+        foreignKey.setLength(columnDB.getLength());
+        foreignKey.setClazz(clazz);
+        if (name.length() == 0) {
+            foreignKey.setName(columnDB.getName());
+        } else {
+            foreignKey.setName(name);
+        }
+        foreignKey.setNameTableTo(getNameTable(clazz));
+        foreignKey.setNameColumnTo(columnDB.getName());
+        return foreignKey;
+    }
+
+    private static ColumnDB setNamePrimaryKey(Class<?> clazz, String name) throws Exception {
+        ColumnDB id = getId(clazz);
+        if (!name.isEmpty()) {
+            id.setName(name);
+        } else {
+            id.setName(name + "_id");
+        }
+        return id;
+
+
+    }
+
+    private static Class getTypeClass(Field field) {
+        Class type;
+        if (Collection.class.isAssignableFrom(field.getType()))
+            type = getGenericType(field.getGenericType(), 0);
+        else
+            type = field.getType();
+        return type;
     }
 
     private static Class getGenericType(Type type, int numb) {

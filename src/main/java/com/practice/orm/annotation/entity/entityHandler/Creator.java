@@ -21,10 +21,13 @@ public class Creator {
     }
 
     public static void build() throws Exception {
-        if (Handler.getTablesDB() != null) {
+        if (Handler.getRelationalTables() != null) {
             CreatorTables.generateTables(
-                    Handler.getTablesDB());
-            CreatorTables.generateTables(Handler.getRelationalTables());
+                    Handler.getRelationalTables());
+            CreatorTables.generateForeignKeys(Handler.getRelationalTables());
+            CreatorTables.generateRelation(Handler.getRelationalTables());
+
+
         } else {
             throw new NotFoundAnnotatedClass("Not found annotated classes");
         }

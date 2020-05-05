@@ -6,6 +6,7 @@ import java.util.Set;
 public class TableDB {
 
     private Class<?> clazz;
+    private boolean IsPKAutoIncrement;
     private String TableName;
     private ColumnDB primaryKey;
     private Set<ColumnDB> columnDBS;
@@ -20,20 +21,12 @@ public class TableDB {
         this.clazz = clazz;
     }
 
-    public Set<ForeignKey> getForeignKey() {
-        return foreignKey;
+    public boolean isPKAutoIncrement() {
+        return IsPKAutoIncrement;
     }
 
-    public void setForeignKey(Set<ForeignKey> foreignKey) {
-        this.foreignKey = foreignKey;
-    }
-
-    public Set<ColumnDB> getColumnDBS() {
-        return columnDBS;
-    }
-
-    public void setColumnDBS(Set<ColumnDB> columnDBS) {
-        this.columnDBS = columnDBS;
+    public void setPKAutoIncrement(boolean PKAutoIncrement) {
+        IsPKAutoIncrement = PKAutoIncrement;
     }
 
     public String getTableName() {
@@ -50,6 +43,22 @@ public class TableDB {
 
     public void setPrimaryKey(ColumnDB primaryKey) {
         this.primaryKey = primaryKey;
+    }
+
+    public Set<ColumnDB> getColumnDBS() {
+        return columnDBS;
+    }
+
+    public void setColumnDBS(Set<ColumnDB> columnDBS) {
+        this.columnDBS = columnDBS;
+    }
+
+    public Set<ForeignKey> getForeignKey() {
+        return foreignKey;
+    }
+
+    public void setForeignKey(Set<ForeignKey> foreignKey) {
+        this.foreignKey = foreignKey;
     }
 
     @Override

@@ -13,8 +13,15 @@ import java.util.Set;
 public class Main {
     public static void main(String[] args) throws Exception {
         Creator.addAnnotatedClass(User.class);
+
         Creator.addAnnotatedClass(Book.class);
-        Creator.addAnnotatedClass(Cat.class);
+        Set<TableDB> tablesDB = Handler.getTablesDB();
+        for (TableDB table :
+                tablesDB) {
+            System.out.println(table.getTableName());
+        }
+        System.out.println(tablesDB.size());
+
         Creator.build();
 //        Set<TableDB> tablesDB = Handler.getTablesDB();
 //        for (TableDB table :
