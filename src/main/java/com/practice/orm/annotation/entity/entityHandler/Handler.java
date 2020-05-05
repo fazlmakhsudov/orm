@@ -6,10 +6,6 @@ import com.practice.orm.annotation.entity.DBHandlers.TableDB;
 import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
 import com.practice.orm.annotation.entity.entityHandler.exceptions.NotFoundAnnotatedClass;
-import com.practice.orm.annotation.relationalAnotation.JoinColumn;
-import com.practice.orm.annotation.relationalAnotation.ManyToMany;
-import com.practice.orm.annotation.relationalAnotation.ManyToOne;
-import com.practice.orm.annotation.relationalAnotation.OneToMany;
 import com.practice.orm.annotation.relationalAnotation.relationHandler.RelationHandler;
 
 import java.lang.annotation.Annotation;

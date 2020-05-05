@@ -3,8 +3,6 @@ package com.practice.orm.annotation.entity.generatorTable;
 import com.practice.orm.annotation.entity.DBHandlers.ColumnDB;
 import com.practice.orm.annotation.entity.DBHandlers.ForeignKey;
 import com.practice.orm.annotation.entity.DBHandlers.TableDB;
-import com.practice.orm.db.utilDao.entiry.DBUtil;
-import com.practice.orm.db.utilDao.entiry.PropertyBundle;
 
 import java.sql.Connection;
 import java.sql.SQLException;
