@@ -236,7 +236,7 @@ public class Handler {
                     foreignKey.setName(field.getAnnotation(JoinColumn.class).name());
                 }
             } else {
-                foreignKey.setName(getId(foreignKey.getClazz()).getName());
+                foreignKey.setName(getId(clazz).getName());
             }
         } else {
             foreignKey.setName(field.getAnnotation(OneToMany.class).mappedBy());

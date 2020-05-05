@@ -16,7 +16,7 @@ public class User {
     @Column
     private String name;
 
-    @ManyToOne
+    @ManyToMany
     private List<Book> books;
 
 }

@@ -170,7 +170,7 @@ public class CreatorTables {
 
     private static String generatorForeignKeys(ForeignKey foreignKey,String tableName) throws Exception {
         StringBuilder stringBuilder = new StringBuilder(addRelation);
-        stringBuilder.append(tableName);
+        stringBuilder.append(foreignKey.getNameTableFrom());
         stringBuilder.append(" ADD ");
         stringBuilder.append(" FOREIGN KEY (");
         stringBuilder.append(foreignKey.getName());
