@@ -1,4 +1,4 @@
-package com.practice.orm.annotation.relational_annotation;
+package com.practice.orm.annotation.relationalAnotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,7 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface OneToMany {
-    String tableName() default "";
-    String columnName() default "";
+public @interface JoinColumn {
+        String name() default "";
 }
