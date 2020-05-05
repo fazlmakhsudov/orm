@@ -28,7 +28,11 @@ public class QueryPatternMap {
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.UPDATE, "UPDATE *table* SET *set-block* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.DELETE, "DELETE FROM *table* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.READ_ALL, "SELECT * FROM *table*;");
+<<<<<<< HEAD
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.CREATE_TABLE, "CREATE TABLE *table*(*columns*);");
+=======
+        bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.CREATE_TABLE, "CREATE TABLE IF NOT EXISTS *table*(*columns*);");
+>>>>>>> 0f87352cd5f9dc2b69ef799b370abe2026b74967
     }
 
     public void setDbName(String dbName) {
