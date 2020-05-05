@@ -14,7 +14,11 @@ public class Cat {
     @Column(name = "klikuha")
     private String name;
 
-    @ManyToOne
+    @ManyToMany(primaryKey = "qaz",
+            nameTable = "qwerty",
+            joinColumn = @JoinColumn(name = "joinColumn"),
+            inverseJoinColumn = @JoinColumn(name = "Invers")
+    )
     private List<Book> books;
 
 

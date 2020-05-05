@@ -16,8 +16,7 @@ public class Book {
     @Column(name = "genre")
     private String genre;
 
-//    @ManyToOne
-//    @JoinColumn
+//    @OneToMany
 //    private List<User> users;
 
 

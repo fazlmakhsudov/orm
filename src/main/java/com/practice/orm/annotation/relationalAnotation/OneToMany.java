@@ -9,6 +9,5 @@ import java.lang.annotation.Target;
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface OneToMany {
     String mappedBy() default "";
-    Class<?> targetEntity() default Object.class;
-    boolean orphanRemoval() default false;
+    FetchType fetch() default FetchType.LAZY;
 }

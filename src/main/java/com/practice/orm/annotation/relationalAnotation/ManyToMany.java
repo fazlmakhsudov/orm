@@ -14,4 +14,5 @@ public @interface ManyToMany {
     String nameTable() default "";
     JoinColumn joinColumn() default @JoinColumn;
     JoinColumn inverseJoinColumn() default @JoinColumn;
+    FetchType fetch() default FetchType.LAZY;
 }

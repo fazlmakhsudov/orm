@@ -15,12 +15,4 @@ public class User {
 
     @Column
     private String name;
-
-    @ManyToMany(primaryKey = "qwe",
-    joinColumn = @JoinColumn(name = "joinqw"),
-    inverseJoinColumn = @JoinColumn(name = "invers"))
-    private List<Cat> cats;
-
-    @OneToMany
-    private List<Book> books;
 }
