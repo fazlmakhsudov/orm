@@ -1,6 +1,6 @@
 package com.practice.orm.crud.repository.implementation;
 
-
+import com.mysql.cj.x.protobuf.MysqlxPrepare.Prepare;
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;
 import com.practice.orm.annotation.entity.DBHandlers.TableDB;
@@ -14,9 +14,12 @@ import com.practice.orm.db.utilDao.entiry.DbKeys;
 import com.practice.orm.db.utilDao.entiry.PropertyBundle;
 import com.practice.orm.db.utilDao.entiry.QueryFormer;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -26,6 +29,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	private QueryFormer queryFormer;
 	private List<C> ObjectList;
 	private PropertyBundle propertyBundle;
+	private static String tableName;
 
 	public ICrudRepositoryImpl() {
 		ObjectList = new LinkedList<C>();
@@ -60,14 +64,34 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	}
 
 	@Override
-	public C find(int id) {
+	public C find(int id, Class clazz) {
 
-		return null;
+		C foundObject = null;
+		try {
+			foundObject = (C) clazz.newInstance();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		try {
+			Connection connection = dbUtil.getConnectionFromPool();
+			String SqlQuery = makeSqlQuery(clazz, DbKeys.READ);
+			PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
+			preparedStatement.setObject(1, id);
+			ResultSet resultSet = preparedStatement.executeQuery();
+			foundObject = returnObject(resultSet, foundObject, clazz);
+			dbUtil.returnConnectionToPool(connection);
+		} catch (Exception Ex) {
+			Ex.printStackTrace();
+		}
+		System.out.println(foundObject.toString());
+		return foundObject;
 	}
 
 	@Override
-	public boolean modify(C object) {
-
+	public boolean modify(int id, Class clazz) {
+		C objectToUpdate = find(id, clazz);
+		System.out.println(objectToUpdate.toString());
 		return false;
 	}
 
@@ -88,12 +112,22 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		GeneratorHandler.getInstance().setAnnotatedClasses(Handler.getClasses());
 		GeneratorHandler.getInstance().buildTablesCounterGenerator();
 		Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
-		String tableName = namesOfTables.get(obj.getClass());
+		tableName = namesOfTables.get(obj.getClass());
 		queryFormer.setTablesAndColumns(Handler.getTable());
 		queryFormer.setPropertyBundle(propertyBundle);
 		queryFormer.formQueriesForAllTables();
 		String sqlQuery = queryFormer.getQuery(tableName, DbKeys.CREATE);
-		System.out.println(sqlQuery);
+		return sqlQuery;
+	}
+
+	private String makeSqlQuery(Class clazz, String action) {
+		Handler.addClass(clazz);
+		Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
+		tableName = namesOfTables.get(clazz);
+		queryFormer.setTablesAndColumns(Handler.getTable());
+		queryFormer.setPropertyBundle(propertyBundle);
+		queryFormer.formQueriesForAllTables();
+		String sqlQuery = queryFormer.getQuery(tableName, action);
 		return sqlQuery;
 	}
 
@@ -115,24 +149,51 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
 	private void setFields(List<Field> fieldList, PreparedStatement preparedStatement, C obj)
 			throws IllegalArgumentException, IllegalAccessException, SQLException {
-		int fieldCounter = 1;
-		String tableName = Handler.getNamesTable(Handler.getClassesNamedEntity()).get(obj.getClass());
 		Object idValue = GeneratorHandler.getInstance().generateIdValue(tableName);
-		;
-		System.out.println(preparedStatement.toString());
 		for (int i = 0; i < fieldList.size(); i++) {
 			Field field = fieldList.get(i);
 			field.setAccessible(true);
 			if (i == 0) {
-				preparedStatement.setObject((i+1), idValue);
+				preparedStatement.setObject((i + 1), idValue);
 				continue;
 			}
-			preparedStatement.setObject((i+1), field.get(obj));
+			preparedStatement.setObject((i + 1), field.get(obj));
 		}
 	}
 
-	public static void main(String[] args) {
-		ICrudRepositoryImpl<Customer> crudRepo = new ICrudRepositoryImpl<Customer>();
-		crudRepo.add(new Customer("Jim", "Halpert", 30));
+	private C returnObject(ResultSet resultSet, C foundObject, Class clazz) {
+		Field[] fields = clazz.getDeclaredFields();
+		try {
+			if (resultSet.next()) {
+				for (String column : Handler.getTable().get(tableName)) {
+					if (column.equals(tableName + "_id")) {
+						for (Field f : fields) {
+							if (f.getName().equals("id")) {
+								f.setAccessible(true);
+								f.set(foundObject, resultSet.getInt(column));
+							}
+						}
+
+						continue;
+					}
+					for (Field f : fields) {
+						if (f.getType() == int.class && f.getName().equals(column)) {
+							f.setAccessible(true);
+							f.set(foundObject, resultSet.getInt(column));
+						}
+
+						if (f.getType() == String.class && f.getName().equals(column)) {
+							f.setAccessible(true);
+							f.set(foundObject, resultSet.getString(column));
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return foundObject;
 	}
+
 }

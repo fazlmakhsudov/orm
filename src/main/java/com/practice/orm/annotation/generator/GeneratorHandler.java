@@ -53,7 +53,7 @@ public class GeneratorHandler {
 		if (table != null && !((Table) table).name().isBlank()) {
 			tableName = ((Table) table).name();
 		}
-		tableName = tableName.trim().toLowerCase();
+		tableName = tableName.trim();
 		return tableName;
 	}
 

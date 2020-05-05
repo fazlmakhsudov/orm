@@ -38,4 +38,15 @@ public class Customer {
 		this.lastname = lastname;
 		this.age = age;
 	}
+
+	public Customer() {
+	}
+	
+	
+
+	@Override
+	public String toString() {
+		return "Customer [id=" + id + ", firstname=" + firstname + ", lastname=" + lastname + ", age=" + age + "]";
+	}
+
 }

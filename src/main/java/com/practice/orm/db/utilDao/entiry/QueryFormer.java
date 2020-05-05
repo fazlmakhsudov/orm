@@ -161,14 +161,15 @@ public class QueryFormer {
 
 	private String getColumns(String tableName, String columnId) {
 		return queryFormer.tablesAndColumns.get(tableName).stream()
-				.filter(s -> queryFormer.isAnnotatedByGenerator(tableName) || !s.equalsIgnoreCase(columnId))
+				// .filter(s -> queryFormer.isAnnotatedByGenerator(tableName) ||
+				// !s.equalsIgnoreCase(columnId))
 				.reduce((s1, s2) -> s1 + ", " + s2).get();
 	}
 
 	private String getValues(String tableName, String columnId) {
 		return queryFormer.tablesAndColumns.get(tableName).stream()
-				.filter(s -> !s.equalsIgnoreCase(columnId) || queryFormer.isAnnotatedByGenerator(tableName))
-				.filter(s -> queryFormer.isAnnotatedByGenerator(tableName) || !s.equalsIgnoreCase(columnId))
+				// .filter(s -> queryFormer.isAnnotatedByGenerator(tableName) ||
+				// !s.equalsIgnoreCase(columnId))
 
 				.reduce((s1, s2) -> s1 + ", " + s2).get().replaceAll("[\\w]+", "?");
 	}
