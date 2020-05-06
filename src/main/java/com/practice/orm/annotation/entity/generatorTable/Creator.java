@@ -22,7 +22,7 @@ public class Creator {
     }
 
     public static void build() throws Exception {
-        if (Handler.getTablesDB() != null) {
+        if (Handler.getRelationalTables() != null) {
             GeneratorTable.generate(Handler.getRelationalTables());
         } else {
             throw new NotFoundAnnotatedClass("Not found annotated classes");

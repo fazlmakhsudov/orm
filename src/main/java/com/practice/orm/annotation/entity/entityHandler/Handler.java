@@ -22,6 +22,7 @@ public class Handler {
     private static final Set<TableDB> relationalTables = new HashSet<>();
 
     public static Set<TableDB> getRelationalTables() {
+        getTablesDB();
         return relationalTables;
     }
 
@@ -52,6 +53,8 @@ public class Handler {
         return setClasses;
     }
 
+
+
     public static Map<String, List<String>> getTable() {
         Map<String, List<String>> table = new HashMap<>();
         for (TableDB t : getRelationalTables()) {
@@ -64,6 +67,8 @@ public class Handler {
         }
         return table;
     }
+
+
 
     public static TableDB getTableDB(Class<?> clazz) {
         TableDB tableDB = new TableDB();
@@ -84,8 +89,8 @@ public class Handler {
         return tableDB;
     }
 
-    public static Set<TableDB> getTablesDB() {
-        Set<TableDB> tableDBS = new HashSet<>();
+    public static void getTablesDB() {
+
         for (Class<?> clazz : getClassesNamedEntity()) {
             if (relationalTables.contains(getTableDB(clazz))) {
                 continue;
@@ -93,7 +98,23 @@ public class Handler {
                 relationalTables.add(getTableDB(clazz));
             }
         }
-        return relationalTables;
+    }
+
+    public static Map<Class<?>,String> getNameTableByClass(Class<?> clazz)
+    {
+        Map<Class<?>,String>  nameTable = new HashMap<>();
+        nameTable.put(clazz,getNameTable(clazz));
+        return nameTable;
+    }
+
+    public static Map<String,Field> getFieldByName(Class<?> clazz)
+    {
+        Map<String ,Field> fieldMap = new HashMap<>();
+        for (ColumnDB col :
+                getColumns(clazz)) {
+            fieldMap.put(col.getName(), col.getField());
+        }
+        return fieldMap;
     }
 
     public static Map<Class<?>, String> getNamesTable(Set<Class<?>> classes) {
@@ -133,7 +154,7 @@ public class Handler {
         return columnDB;
     }
 
-    private static Set<ColumnDB> getColumns(Class<?> clazz) {
+    public static Set<ColumnDB> getColumns(Class<?> clazz) {
         Set<ColumnDB> columnsForDB = new HashSet<>();
         for (Field f :
                 getFieldsNamedByAnnotation(clazz, Column.class)) {
@@ -151,7 +172,7 @@ public class Handler {
         if (clazz.isAnnotationPresent(Table.class)) {
             name = clazz.getAnnotation(Table.class).name();
         } else {
-            name = clazz.getSimpleName() + "s";
+            name = clazz.getSimpleName()+"s";
         }
         return name;
     }

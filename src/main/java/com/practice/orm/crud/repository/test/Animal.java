@@ -3,12 +3,16 @@ package com.practice.orm.crud.repository.test;
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;
 import com.practice.orm.annotation.entity.Id;
+import com.practice.orm.annotation.entity.Table;
+import com.practice.orm.annotation.generator.Generator;
 import com.practice.orm.annotation.relationalAnotation.ManyToOne;
 
 @Entity
+@Table(name = "qaz")
 public class Animal {
     @Id
-    private Long id;
+    @Generator
+    private Integer id;
 
     @Column
     private String name;
