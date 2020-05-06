@@ -89,18 +89,27 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	}
 
 	@Override
-	public boolean modify(int id, C object) {
+	public boolean modify(int id, C obj) {
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
-			C objectToUpdate = find(id, object.getClass());
-			String sqlQuery = makeSqlQuery(object.getClass(), DbKeys.UPDATE);
+			C objectToUpdate = find(id, obj.getClass());
+			String sqlQuery = makeSqlQuery(obj.getClass(), DbKeys.UPDATE);
 			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+			Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
+			tableName = namesOfTables.get(obj.getClass());
+			List<String> columns = Handler.getTable().get(tableName);
 			List<Field> listOfFields = makeListOfFields(objectToUpdate);
+			System.out.println(columns);
 			for (int i = 0; i < listOfFields.size(); i++) {
 				Field field = listOfFields.get(i);
+				Optional<String> columnOptional = columns.stream().filter(column -> column.equalsIgnoreCase(field.getName())).findFirst();
 				field.setAccessible(true);
-				preparedStatement.setObject((i + 1), field.get(objectToUpdate));
+				if (columnOptional.isPresent() && !columnOptional.get().equalsIgnoreCase(columns.get(0))) {
+					preparedStatement.setObject( (i + 1), field.get(objectToUpdate));
+				}
 			}
+//			preparedStatement.setObject(listOfFields.size(),listOfFields.get(0));
+			System.out.println(preparedStatement);
 			int rows = preparedStatement.executeUpdate();
 			if (rows > 0) {
 				System.out.println("A new object has been modified successfully");
@@ -113,15 +122,31 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	}
 
 	@Override
-	public boolean remove(C object) {
-
-		return false;
+	public boolean remove(Object id, Class clazz) throws SQLException {
+		Connection connection = dbUtil.getConnectionFromPool();
+		String SqlQuery = makeSqlQuery(clazz, DbKeys.DELETE);
+		PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
+		preparedStatement.setObject(1, id);
+		boolean flag = preparedStatement.executeUpdate() > 0;
+		dbUtil.returnConnectionToPool(connection);
+		return flag;
 	}
 
 	@Override
-	public List<C> findAll() {
-
-		return null;
+	public List<C> findAll(Class clazz) throws SQLException, IllegalAccessException, InstantiationException, NoSuchFieldException {
+		Connection connection = dbUtil.getConnectionFromPool();
+		String sqlQuery = makeSqlQuery(clazz, DbKeys.READ_ALL);
+		List<C> foundObjects = new ArrayList<>();
+		PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+		try(ResultSet resultSet = preparedStatement.executeQuery()) {
+			while (resultSet.next()) {
+				C obj = this.getObjectFromResultSet(resultSet, clazz);
+				foundObjects.add(obj);
+			}
+		}
+		preparedStatement.close();
+		dbUtil.returnConnectionToPool(connection);
+		return foundObjects;
 	}
 
 	private String makeSqlQuery(C obj) {
@@ -213,4 +238,20 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		return foundObject;
 	}
 
+	private C getObjectFromResultSet(ResultSet resultSet, Class clazz) throws IllegalAccessException, InstantiationException, NoSuchFieldException, SQLException {
+		C obj = (C) clazz.newInstance();
+		List<String> columns = Handler.getTable().get(tableName);
+		for (String column : columns) {
+			String fieldName = new String(column);
+			if (fieldName.matches(tableName + "_.+")) {
+				int charAt = fieldName.indexOf("_");
+				fieldName = fieldName.substring(charAt + 1);
+			}
+			Field field = clazz.getDeclaredField(fieldName);
+			field.setAccessible(true);
+			Object value = resultSet.getObject(column);
+			field.set(obj, value);
+		}
+		return obj;
+	}
 }
