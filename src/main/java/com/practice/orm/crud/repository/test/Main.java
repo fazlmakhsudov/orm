@@ -1,34 +1,34 @@
 package com.practice.orm.crud.repository.test;
 
-import com.practice.orm.annotation.entity.entityHandler.Handler;
+import com.practice.orm.Animal;
+import com.practice.orm.Zoo;
 import com.practice.orm.annotation.entity.generatorTable.Creator;
-import com.practice.orm.annotation.generator.GeneratorHandler;
 import com.practice.orm.crud.service.ICrudService;
 
-import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.SQLException;
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        Creator.addAnnotatedClass(Animal.class);
-        Creator.addAnnotatedClass(Zoo.class);
-//        1)List<Class> classes = Handler.getClasses();
-//        or
-//        1)Set<Class<?>> classesNamedEntity = Handler.getClassesNamedEntity();
+	public static void main(String[] args) throws Exception {
+		//Dima creates tables
+		Creator.addAnnotatedClass(Customer.class);
+		Creator.build();
 
-//        2)Map<String, List<String>> table = Handler.getTable();
-//        System.out.println(table.get(Handler.getNameTable(Zoo.class)));
+		// TAble exist
+		Customer customer1 = new Customer("Federic1", "Babarian1", 1);
+		Customer customer2 = new Customer("Federic2", "Babarian2", 2);
+		Customer customer3 = new Customer("Federic3", "Babarian3", 3);
+		Customer customer4 = new Customer("Federic4", "Babarian4", 4);
+//
+		ICrudService.create(customer1);
+		ICrudService.create(customer2);
+		ICrudService.create(customer3);
+		ICrudService.create(customer4);
+//
+//		System.out.println(ICrudService.read(3, Customer.class).toString() + " :: read");
+//		System.out.println(ICrudService.update(1, new Customer("update", "surnamupta", 33)));
+//		System.out.println("delete: " + ICrudService.delete(2, Customer.class ));;
+//		System.out.println(ICrudService.readAll(Customer.class));
 
-//        3)Map<Class<?>, String> namesTable = Handler.getNamesTable(Handler.getClassesNamedEntity());
 
-//        4)Map<String, Field> fieldByName = Handler.getFieldByName(Zoo.class);
-
-        Creator.build();
-        // Crud
-//       Animal an = new Animal("Pe", "We", 22);
-//       ICrudService.create(an);
-
-    }
+	}
 }
