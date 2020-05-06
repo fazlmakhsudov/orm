@@ -26,13 +26,14 @@ public class RelationHandler {
                 Handler.addRelationTable(getForeignKeyForManyToMany(field, clazz));
             }
             if (field.isAnnotationPresent(OneToMany.class)) {
-                foreignKey.add(getForeignKeyForOneToMany(field,clazz));
+                foreignKey.add(getForeignKeyForOneToMany(field, clazz));
             }
 
         }
         return foreignKey;
     }
-    public static ForeignKey getForeignKeyForOneToMany(Field field,Class<?> clazz) throws Exception {
+
+    public static ForeignKey getForeignKeyForOneToMany(Field field, Class<?> clazz) throws Exception {
         ForeignKey foreignKey = new ForeignKey();
         foreignKey.setClazz(Handler.getTypeClass(field));
         if (field.getAnnotation(OneToMany.class).mappedBy().length() == 0) {
@@ -61,31 +62,54 @@ public class RelationHandler {
     private static TableDB getForeignKeyForManyToMany(Field field, Class<?> clazz) throws Exception {
         TableDB tableDB = new TableDB();
         Class genericType = Handler.getTypeClass(field);
-        if (field.isAnnotationPresent(ManyToMany.class)) {
-            ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
-            if (manyToMany.nameTable().length() == 0) {
-                tableDB.setTableName(clazz.getSimpleName() + "_" + genericType.getSimpleName());
-            } else
-                tableDB.setTableName(field.getAnnotation(ManyToMany.class).nameTable());
-            Set<ForeignKey> foreignKeys = new HashSet<>();
-            if (manyToMany.joinColumn().name().length() == 0) {
-                foreignKeys.add(createForeignKey(clazz, "",tableDB.getTableName()));
-            } else {
-                foreignKeys.add(createForeignKey(clazz, manyToMany.joinColumn().name(),tableDB.getTableName()));
-            }
-            if (manyToMany.inverseJoinColumn().name().length() == 0) {
-                foreignKeys.add(createForeignKey(genericType, "",tableDB.getTableName()));
-            } else {
-                foreignKeys.add(createForeignKey(genericType, manyToMany.inverseJoinColumn().name(),tableDB.getTableName()));
-            }
-            if (manyToMany.primaryKey().length() == 0) {
-                tableDB.setPrimaryKey(Handler.setNamePrimaryKey(clazz, tableDB.getTableName()));
-            } else {
-                tableDB.setPrimaryKey(Handler.setNamePrimaryKey(clazz, manyToMany.primaryKey()));
-            }
-            tableDB.setForeignKey(foreignKeys);
+        ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+        if (isEmptyField(manyToMany.nameTable())) {
+            tableDB.setTableName(clazz.getSimpleName() + "_" + genericType.getSimpleName());
+        } else
+            tableDB.setTableName(field.getAnnotation(ManyToMany.class).nameTable());
+
+        if (isEmptyField(manyToMany.primaryKey())) {
+            tableDB.setPrimaryKey(
+                    Handler.setNamePrimaryKey(clazz, tableDB.getTableName()));
+        } else {
+            tableDB.setPrimaryKey(
+                    Handler.setNamePrimaryKey(clazz, manyToMany.primaryKey()));
         }
+
+        tableDB.setForeignKey(
+                createForeignKeys(manyToMany, clazz, tableDB.getTableName(), genericType)
+        );
         return tableDB;
+    }
+
+    private static Set<ForeignKey> createForeignKeys(ManyToMany manyToMany,
+                                                     Class<?> clazz,
+                                                     String tableName,
+                                                     Class genericType) throws Exception {
+        Set<ForeignKey> foreignKeys = new HashSet<>();
+        if (isEmptyField(manyToMany.joinColumn().name())) {
+            foreignKeys.add(
+                    createForeignKey(clazz, "", tableName));
+        } else {
+            foreignKeys.add(
+                    createForeignKey(clazz, manyToMany.joinColumn().name(), tableName));
+        }
+        if (isEmptyField(manyToMany.inverseJoinColumn().name())) {
+            foreignKeys.add(
+                    createForeignKey(genericType, "", tableName));
+        } else {
+            foreignKeys.add(createForeignKey(
+                    genericType, manyToMany.inverseJoinColumn().name(), tableName));
+        }
+        return foreignKeys;
+    }
+
+    private static boolean isEmptyField(String string) {
+        if (string.length() == 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private static ForeignKey getForeignKeyForManyToOne(Field field, Class<?> clazz) throws Exception {
@@ -114,7 +138,7 @@ public class RelationHandler {
         return foreignKey;
     }
 
-    private static ForeignKey createForeignKey(Class<?> clazz, String name,String nameTable) throws Exception {
+    private static ForeignKey createForeignKey(Class<?> clazz, String name, String nameTable) throws Exception {
         ColumnDB columnDB = Handler.getId(clazz);
         ForeignKey foreignKey = new ForeignKey();
         foreignKey.setField(columnDB.getField());
