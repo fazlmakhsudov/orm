@@ -21,4 +21,24 @@ public class Animal {
 
     @ManyToOne
     private Zoo zoo;
+
+    public Animal(String name, String type, double weight) {
+        this.name = name;
+        this.type = type;
+        this.weight = weight;
+    }
+
+    public Animal() {
+    }
+
+    @Override
+    public String toString() {
+        return "Animal{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                ", weight=" + weight +
+                ", zoo=" + zoo +
+                '}';
+    }
 }

@@ -37,6 +37,13 @@ public class GeneratorHandler {
     }
 
     public void buildTablesCounterGenerator() {
+        boolean flag = generatorHandler.annotatedClasses.stream()
+                .anyMatch(cl -> {
+                    return generatorHandler.countersForTable.containsKey(getTableName(cl));
+                });
+        if (flag) {
+            return;
+        }
         initializeCounterForTables();
         generatorHandler.tableCounterType = generatorHandler.annotatedClasses.stream()
                 .filter(cl -> getAnnotatedField(cl.getDeclaredFields()).isPresent())

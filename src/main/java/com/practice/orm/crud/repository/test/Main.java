@@ -6,11 +6,12 @@ import com.practice.orm.crud.service.ICrudService;
 public class Main {
     public static void main(String[] args) throws Exception {
         Creator.addAnnotatedClass(Animal.class);
-        Creator.addAnnotatedClass(Zoo.class);
-        Creator.addAnnotatedClass(Zoo.class);
+//        Creator.addAnnotatedClass(Zoo.class);
         Creator.build();
 
-
+        // Crud
+       Animal an = new Animal("Pe", "We", 22);
+       ICrudService.create(an);
 
     }
 }

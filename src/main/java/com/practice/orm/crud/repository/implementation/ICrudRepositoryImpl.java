@@ -168,9 +168,10 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
     private Map<String, Field> makeListOfFields(C obj) throws NoSuchFieldException {
         Map<String, Field> fieldMap = new HashMap<>();
         List<String> columns = Handler.getTable().get(tableName);
+        int l = tableName.length();
         for (String column : columns) {
             String fieldName = new String(column);
-            if (column.matches(tableName + ".+")) {
+            if (column.matches(tableName.substring(0, l - 2) + ".+")) {
                 int charAt = fieldName.indexOf("_");
                 fieldName = fieldName.substring(charAt + 1);
             }
@@ -184,6 +185,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
             throws IllegalArgumentException, IllegalAccessException, SQLException, NoSuchFieldException {
         Object idValue = GeneratorHandler.getInstance().generateIdValue(tableName);
         List<String> fieldOrder = QueryFormer.getInstance().getFieldOrder(tableName);
+        System.out.println(fieldOrder);
         for (int i = 0; i < fieldOrder.size(); i++) {
             String column = fieldOrder.get(i);
             Field field = fieldMap.get(column);
@@ -194,14 +196,16 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
             }
             preparedStatement.setObject( (i + 1), fieldValue);
         }
+        System.out.println(preparedStatement);
     }
 
     private C returnObject(ResultSet resultSet, C foundObject, Class clazz) {
         Field[] fields = clazz.getDeclaredFields();
+        int l = tableName.length();
         try {
             if (resultSet.next()) {
                 for (String column : Handler.getTable().get(tableName)) {
-                    if (column.equals(tableName + "_id")) {
+                    if (column.equals(tableName.substring(0, l - 2) + "_id")) {
                         for (Field f : fields) {
                             if (f.getName().equals("id")) {
                                 f.setAccessible(true);
@@ -236,7 +240,8 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
         List<String> columns = Handler.getTable().get(tableName);
         for (String column : columns) {
             String fieldName = new String(column);
-            if (fieldName.matches(tableName + "_.+")) {
+            int l = tableName.length();
+            if (fieldName.matches(tableName.substring(0,l - 2) + "_.+")) {
                 int charAt = fieldName.indexOf("_");
                 fieldName = fieldName.substring(charAt + 1);
             }
