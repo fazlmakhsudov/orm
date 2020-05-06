@@ -49,7 +49,8 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
 			String SqlQuery = makeSqlQuery(object);
-			List<Field> fieldList = makeListOfFields(object);
+			System.out.println(Handler.getTable());
+			Map<String,Field> fieldList = makeListOfFields(object);
 			PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
 			setFields(fieldList, preparedStatement, object);
 			int rows = preparedStatement.executeUpdate();
@@ -98,7 +99,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
 			tableName = namesOfTables.get(obj.getClass());
 			List<String> columns = Handler.getTable().get(tableName);
-			List<Field> listOfFields = makeListOfFields(objectToUpdate);
+			Map<String,Field> listOfFields = makeListOfFields(objectToUpdate);
 			System.out.println(columns);
 			for (int i = 0; i < listOfFields.size(); i++) {
 				Field field = listOfFields.get(i);
@@ -173,33 +174,41 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		return sqlQuery;
 	}
 
-	private List<Field> makeListOfFields(C obj) {
-		Set<TableDB> tableSet = Handler.getTablesDB();
-		List<Field> fieldList = new ArrayList<Field>();
-		for (TableDB table : tableSet) {
-			if (obj.getClass().isAnnotationPresent(Entity.class)) {
-				Field[] fields = obj.getClass().getDeclaredFields();
-				for (Field field : fields) {
-					if (field.isAnnotationPresent(Column.class)) {
-						fieldList.add(field);
-					}
-				}
+	private Map<String, Field> makeListOfFields(C obj) throws NoSuchFieldException {
+		Map<String, Field> fieldMap = new HashMap<>();
+		List<String> columns = Handler.getTable().get(tableName);
+		for (String column : columns) {
+			String fieldName = new String(column);
+			if (column.matches(tableName + ".+")) {
+				int charAt = fieldName.indexOf("_");
+				fieldName = fieldName.substring(charAt + 1);
 			}
+			Field field = obj.getClass().getDeclaredField(fieldName);
+			fieldMap.put(column, field);
 		}
-		return fieldList;
+		return fieldMap;
 	}
 
-	private void setFields(List<Field> fieldList, PreparedStatement preparedStatement, C obj)
-			throws IllegalArgumentException, IllegalAccessException, SQLException {
+	private void setFields(Map<String,Field> fieldMap, PreparedStatement preparedStatement, C obj)
+			throws IllegalArgumentException, IllegalAccessException, SQLException, NoSuchFieldException {
 		Object idValue = GeneratorHandler.getInstance().generateIdValue(tableName);
-		for (int i = 0; i < fieldList.size(); i++) {
-			Field field = fieldList.get(i);
+		List<String> fieldOrder = QueryFormer.getInstance().getFieldOrder(tableName);
+		for (int i = 0; i < fieldOrder.size(); i++) {
+			String column = fieldOrder.get(i);
+			Field field = fieldMap.get(column);
 			field.setAccessible(true);
+			Object fieldValue = field.get(obj);
 			if (i == 0) {
-				preparedStatement.setObject((i + 1), idValue);
-				continue;
+				fieldValue = idValue;
 			}
-			preparedStatement.setObject((i + 1), field.get(obj));
+			preparedStatement.setObject( (i + 1), fieldValue);
+//			Field field = obj.getClass().getDeclaredField()
+//			field.setAccessible(true);
+//			if (i == 0) {
+//				preparedStatement.setObject((i + 1), idValue);
+//				continue;
+//			}
+//			preparedStatement.setObject((i + 1), field.get(obj));
 		}
 	}
 
