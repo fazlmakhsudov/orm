@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface ICrudRepository<C, Integer> {
-	C add(C object);
+	boolean add(C object);
 
 	C find(Object id, Class clazz);
 

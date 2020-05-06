@@ -29,12 +29,20 @@ public class GeneratorHandler {
 	}
 
 	public void setAnnotatedClasses(List<Class> annotatedClasses) {
-		generatorHandler.annotatedClasses = annotatedClasses;
+
+			generatorHandler.annotatedClasses = annotatedClasses;
 		logger.log(Level.INFO, "setAnnatatedClasses() with parameter:\n {0}",
 				new String[] { annotatedClasses.toString() });
 	}
 
 	public void buildTablesCounterGenerator() {
+		boolean flag = generatorHandler.annotatedClasses.stream()
+				.anyMatch(cl -> {
+					return generatorHandler.countersForTable.containsKey(getTableName(cl));
+				});
+		if (flag) {
+			return;
+		}
 		initializeCounterForTables();
 		generatorHandler.tableCounterType = generatorHandler.annotatedClasses.stream()
 				.filter(cl -> getAnnotatedField(cl.getDeclaredFields()).isPresent())

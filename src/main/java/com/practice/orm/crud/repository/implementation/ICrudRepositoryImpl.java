@@ -44,17 +44,17 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	}
 
 	@Override
-	public C add(C object) {
+	public boolean add(C object) {
 		//ошибка в порядке значений для преп стат
+		boolean flag = false;
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
 			String SqlQuery = makeSqlQuery(object);
-			System.out.println(Handler.getTable());
 			Map<String,Field> fieldList = makeListOfFields(object);
 			PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
 			setFields(fieldList, preparedStatement, object);
-			int rows = preparedStatement.executeUpdate();
-			if (rows > 0) {
+			flag = preparedStatement.executeUpdate() > 0;
+			if (flag) {
 				System.out.println("A new object has been added successfully");
 			}
 			dbUtil.returnConnectionToPool(connection);
@@ -62,7 +62,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			Ex.printStackTrace();
 		}
 
-		return null;
+		return flag;
 	}
 
 	@Override
@@ -91,6 +91,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
 	@Override
 	public boolean modify(Object id, C obj) {
+		boolean flag = false;
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
 			C objectToUpdate = find(id, obj.getClass());
@@ -108,16 +109,15 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 				preparedStatement.setObject( i, fieldValue);
 			}
 			preparedStatement.setObject(fieldMap.size(), id);
-			System.out.println(preparedStatement);
-			int rows = preparedStatement.executeUpdate();
-			if (rows > 0) {
+			flag = preparedStatement.executeUpdate() > 0;
+			if (flag) {
 				System.out.println("A new object has been modified successfully");
 			}
 			dbUtil.returnConnectionToPool(connection);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return false;
+		return flag;
 	}
 
 	@Override
