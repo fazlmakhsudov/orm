@@ -23,7 +23,7 @@ public class RelationHandler {
                 foreignKey.add(getForeignKeyForManyToOne(field, clazz));
             }
             if (field.isAnnotationPresent(ManyToMany.class)) {
-                Handler.addRelationTable(getForeignKeyForManyToMany(field, clazz));
+                Handler.addRelationTable(getTableForManyToMany(field, clazz));
             }
             if (field.isAnnotationPresent(OneToMany.class)) {
                 foreignKey.add(getForeignKeyForOneToMany(field, clazz));
@@ -59,7 +59,7 @@ public class RelationHandler {
         return foreignKey;
     }
 
-    private static TableDB getForeignKeyForManyToMany(Field field, Class<?> clazz) throws Exception {
+    private static TableDB getTableForManyToMany(Field field, Class<?> clazz) throws Exception {
         TableDB tableDB = new TableDB();
         Class genericType = Handler.getTypeClass(field);
         ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
