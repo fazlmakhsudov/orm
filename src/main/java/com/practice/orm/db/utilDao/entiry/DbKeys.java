@@ -1,8 +1,5 @@
 package com.practice.orm.db.utilDao.entiry;
 
-/**
- * Stores key-actions for QueryPatternMap
- */
 public class DbKeys {
     public static final String MYSQL = "mysql";
     public static final String POSTGRE = "postgre";

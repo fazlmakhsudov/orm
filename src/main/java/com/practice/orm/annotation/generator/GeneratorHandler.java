@@ -1,5 +1,8 @@
 package com.practice.orm.annotation.generator;
 
+import com.practice.orm.annotation.entity.Id;
+import com.practice.orm.annotation.entity.Table;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -49,8 +52,8 @@ public class GeneratorHandler {
     private String getTableName(Class cl) {
         Annotation table = cl.getAnnotation(Table.class);
         String tableName = cl.getSimpleName();
-        if (table != null && !((Table) table).tableName().isBlank()) {
-            tableName = ((Table) table).tableName();
+        if (table != null && !((Table) table).name().isBlank()) {
+            tableName = ((Table) table).name();
         }
         tableName = tableName.trim().toLowerCase();
         return tableName;
