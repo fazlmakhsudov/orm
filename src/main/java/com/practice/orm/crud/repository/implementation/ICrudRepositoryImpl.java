@@ -66,7 +66,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	}
 
 	@Override
-	public C find(int id, Class clazz) {
+	public C find(Object id, Class clazz) {
 
 		C foundObject = null;
 		try {
@@ -90,7 +90,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 	}
 
 	@Override
-	public boolean modify(int id, C obj) {
+	public boolean modify(Object id, C obj) {
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
 			C objectToUpdate = find(id, obj.getClass());
@@ -98,18 +98,16 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
 			Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
 			tableName = namesOfTables.get(obj.getClass());
-			List<String> columns = Handler.getTable().get(tableName);
-			Map<String,Field> listOfFields = makeListOfFields(objectToUpdate);
-			System.out.println(columns);
-			for (int i = 0; i < listOfFields.size(); i++) {
-				Field field = listOfFields.get(i);
-				Optional<String> columnOptional = columns.stream().filter(column -> column.equalsIgnoreCase(field.getName())).findFirst();
+			Map<String,Field> fieldMap = makeListOfFields(objectToUpdate);
+			List<String> fieldOrder = QueryFormer.getInstance().getFieldOrder(tableName);
+			for (int i = 1; i < fieldOrder.size(); i++) {
+				String column = fieldOrder.get(i);
+				Field field = fieldMap.get(column);
 				field.setAccessible(true);
-				if (columnOptional.isPresent() && !columnOptional.get().equalsIgnoreCase(columns.get(0))) {
-					preparedStatement.setObject( (i + 1), field.get(objectToUpdate));
-				}
+				Object fieldValue = field.get(obj);
+				preparedStatement.setObject( i, fieldValue);
 			}
-//			preparedStatement.setObject(listOfFields.size(),listOfFields.get(0));
+			preparedStatement.setObject(fieldMap.size(), id);
 			System.out.println(preparedStatement);
 			int rows = preparedStatement.executeUpdate();
 			if (rows > 0) {
@@ -202,13 +200,6 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 				fieldValue = idValue;
 			}
 			preparedStatement.setObject( (i + 1), fieldValue);
-//			Field field = obj.getClass().getDeclaredField()
-//			field.setAccessible(true);
-//			if (i == 0) {
-//				preparedStatement.setObject((i + 1), idValue);
-//				continue;
-//			}
-//			preparedStatement.setObject((i + 1), field.get(obj));
 		}
 	}
 

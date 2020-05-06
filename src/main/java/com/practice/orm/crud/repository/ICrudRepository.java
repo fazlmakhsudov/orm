@@ -6,9 +6,9 @@ import java.util.List;
 public interface ICrudRepository<C, Integer> {
 	C add(C object);
 
-	C find(int id, Class clazz);
+	C find(Object id, Class clazz);
 
-	boolean modify(int id, C object);
+	boolean modify(Object id, C object);
 
 	boolean remove(Object id, Class clazz) throws SQLException;
 
