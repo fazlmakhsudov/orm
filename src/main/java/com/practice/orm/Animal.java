@@ -4,11 +4,11 @@ import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;
 import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
+import com.practice.orm.annotation.entity.entityHandler.ColumnMarker;
 import com.practice.orm.annotation.generator.Generator;
 import com.practice.orm.annotation.relationalAnotation.ManyToOne;
 
 @Entity
-@Table(name = "qaz")
 public class Animal {
     @Id
     @Generator
@@ -23,8 +23,7 @@ public class Animal {
     @Column
     private double weight;
 
-    @ManyToOne
-    private Zoo zoo;
+
 
     public Animal(String name, String type, double weight) {
         this.name = name;
@@ -42,7 +41,6 @@ public class Animal {
                 ", name='" + name + '\'' +
                 ", type='" + type + '\'' +
                 ", weight=" + weight +
-                ", zoo=" + zoo +
                 '}';
     }
 }

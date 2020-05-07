@@ -7,6 +7,10 @@ public class Main {
         Creator.addAnnotatedClass(Animal.class);
         Creator.addAnnotatedClass(Zoo.class);
         Creator.build();
+//         1) Dispatcher CRUD
+//           -SCAN OBJECT -> Map<ZOO_Id,List<ZOO-Object,ANIMAL-OBJeCT>
+//           OrderList(ZOO-OBJECT) -> Map<Object,ParentID>
+
 //        1)List<Class> classes = Handler.getClasses();
 //        or
 //        1)Set<Class<?>> classesNamedEntity = Handler.getClassesNamedEntity();

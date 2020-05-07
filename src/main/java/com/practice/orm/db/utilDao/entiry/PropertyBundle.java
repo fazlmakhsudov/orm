@@ -19,10 +19,12 @@ public class PropertyBundle {
 
     public PropertyBundle() {
         try {
+
             String propertyFileName = getPropertyFileName();
             this.resourceBundle = ResourceBundle.getBundle(propertyFileName);
             QueryPatternMap.getInstance().setDbName(resourceBundle.getString("db"));
             this.queriesInMap = QueryPatternMap.getInstance().getQueriesInMap();
+
         } catch (IOException e) {
             logger.log(Level.WARNING, e.getLocalizedMessage());
         }

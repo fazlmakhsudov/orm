@@ -7,6 +7,7 @@ import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
 import com.practice.orm.annotation.entity.entityHandler.exceptions.NotFoundAnnotatedClass;
 import com.practice.orm.annotation.generator.Generator;
+import com.practice.orm.annotation.relationalAnotation.ManyToMany;
 import com.practice.orm.annotation.relationalAnotation.relationalHandler.RelationHandler;
 
 import java.lang.annotation.Annotation;
@@ -20,7 +21,11 @@ public class Handler {
 
     private static final List<Class> classes = new LinkedList<>();
     private static final Set<TableDB> relationalTables = new HashSet<>();
+    private static final List<Class<?>> beans = new ArrayList<>();
+    static
+    {
 
+    }
     public static Set<TableDB> getRelationalTables() {
         getTablesDB();
         return relationalTables;
@@ -44,6 +49,25 @@ public class Handler {
         }
     }
 
+    public static boolean isBean(Class<?> clazz)
+    {
+        getBeans();
+        return beans.contains(clazz);
+    }
+
+    private static void getBeans()
+    {
+        for (Class<?> c:
+                getClassesNamedEntity()){
+            Set<Field> fieldsNamedByAnnotation = getFieldsNamedByAnnotation(c, ColumnMarker.class);
+            if (fieldsNamedByAnnotation.size()==0) {
+                if (!beans.contains(c))
+                    beans.add(c);
+            }
+        }
+    }
+
+
     public static Set<Class<?>> getClassesNamedEntity() {
         Set<Class<?>> setClasses = new HashSet<>();
         for (Class<?> clazz :
@@ -53,11 +77,23 @@ public class Handler {
         return setClasses;
     }
 
-
+    public static Class getClassByTableName(String tableName)
+    {
+        for (Class clazz :
+                classes) {
+            if (getNameTable(clazz).equals(tableName))
+            {
+                return clazz;
+            }
+        }
+        return null;
+    }
 
     public static Map<String, List<String>> getTable() {
         Map<String, List<String>> table = new HashMap<>();
-        for (TableDB t : getRelationalTables()) {
+        for (Class cl:getClassesNamedEntity())
+        {
+            TableDB t = getTableDB(cl);
             List<String> columnsName = new ArrayList<>();
             columnsName.add(t.getPrimaryKey().getName());
             for (ColumnDB c : t.getColumnDBS()) {
@@ -65,9 +101,23 @@ public class Handler {
             }
             table.put(t.getTableName(), columnsName);
         }
+        for (String tableName :
+                table.keySet()) {
+            getColumnMarker(table,tableName);
+        }
         return table;
     }
 
+    private static Map<String,List<String>> getColumnMarker(Map<String, List<String>> table, String tableName) {
+        Class cl = getClassByTableName(tableName);
+        List<String> columns = table.get(tableName);
+
+        for (Field f :
+                getFieldsNamedByAnnotation(cl,ColumnMarker.class)) {
+            columns.add(f.getName());
+        }
+        return table;
+    }
 
 
     public static TableDB getTableDB(Class<?> clazz) {
@@ -126,7 +176,7 @@ public class Handler {
         return names;
     }
 
-    private static Set<Field> getFieldsNamedByAnnotation(Class<?> classes,
+    public static Set<Field> getFieldsNamedByAnnotation(Class<?> classes,
                                                          Class<? extends Annotation> annotation) {
         Set<Field> fields = Arrays.stream(classes.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(annotation))
@@ -148,6 +198,7 @@ public class Handler {
                 columnDB.setName(field.getAnnotation(Column.class).name());
             }
         }
+
         columnDB.setLength(field.getAnnotation(Column.class).length());
         columnDB.setField(field);
         columnDB.setType(getSqlType(field));

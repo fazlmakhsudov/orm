@@ -1,10 +1,18 @@
 package com.practice.orm.crud.repository.test;
 
+import com.practice.orm.Animal;
+import com.practice.orm.Zoo;
 import com.practice.orm.annotation.entity.Column;
 import com.practice.orm.annotation.entity.Entity;
 import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
+import com.practice.orm.annotation.entity.entityHandler.ColumnMarker;
 import com.practice.orm.annotation.generator.Generator;
+import com.practice.orm.annotation.relationalAnotation.ManyToMany;
+import com.practice.orm.annotation.relationalAnotation.ManyToOne;
+import com.practice.orm.annotation.relationalAnotation.OneToMany;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "Customers")
@@ -24,6 +32,22 @@ public class Customer {
 	@Column(name = "age", nullable = false)
 	private int age;
 
+	@ManyToOne
+	@ColumnMarker
+	private Zoo qwerty;
+
+	@ManyToMany
+	@ColumnMarker
+	private Set<Animal> animal;
+
+	public Set<Animal> getAnimal() {
+		return animal;
+	}
+
+	public void setAnimal(Set<Animal> animal) {
+		this.animal = animal;
+	}
+
 	public Customer(int id, String firstname, String lastname, int age) {
 		super();
 		this.id = id;
@@ -41,8 +65,14 @@ public class Customer {
 
 	public Customer() {
 	}
-	
-	
+
+	public Zoo getQwerty() {
+		return qwerty;
+	}
+
+	public void setQwerty(Zoo qwerty) {
+		this.qwerty = qwerty;
+	}
 
 	@Override
 	public String toString() {

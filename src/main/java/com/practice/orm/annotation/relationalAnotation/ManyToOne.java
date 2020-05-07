@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Target(value = ElementType.FIELD)
 @Retention(value = RetentionPolicy.RUNTIME)
 public @interface ManyToOne {
-    FetchType fetch() default FetchType.LAZY;
     String mappedBy() default "";
+    FetchType fetch() default FetchType.LAZY;
 }
