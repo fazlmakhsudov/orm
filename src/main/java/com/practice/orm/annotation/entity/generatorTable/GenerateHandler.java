@@ -49,7 +49,6 @@ final public class  GenerateHandler {
              String [] queries = getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()).split(";");
                 Arrays.stream(queries).forEach(s ->{
                     strings.add(s+";");
-                    System.out.println(s+";");
                 });
             }
         }
