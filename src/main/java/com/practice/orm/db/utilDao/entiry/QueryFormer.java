@@ -2,6 +2,8 @@ package com.practice.orm.db.utilDao.entiry;
 
 import com.practice.orm.annotation.generator.GeneratorHandler;
 
+
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,7 @@ public class QueryFormer {
     }
 
     public void setTablesAndColumns(Map<String, List<String>> tablesAndColumns) {
-        this.tablesAndColumns = tablesAndColumns;
+        queryFormer.tablesAndColumns = tablesAndColumns;
         queryFormer.tableQueries = tablesAndColumns.keySet().stream()
                 .collect(Collectors.toMap(s -> s, s -> new HashMap<>()));
         logger.log(Level.INFO, "setTablesAndColumns() with parameter:\n {0}",
@@ -83,15 +85,19 @@ public class QueryFormer {
                 new String[]{printInitialDatabaseConfiguration()});
     }
 
+    public List<String> getFieldOrder(String tableName) {
+        return queryFormer.tablesAndColumns.get(tableName);
+    }
+
     private String formCreateTableQuery(String tableName, Map<String, List<String>> columns) {
         StringBuffer sb = new StringBuffer();
         String pattern = queryFormer.propertyBundle.getQuery(DbKeys.CREATE_TABLE);
         pattern = queryFormer.changeTableName(tableName, pattern);
-        columns.forEach(
-                (columnName, columnParameters) -> {
-                    sb.append(formColumnQueryForCreateTable(tableName, columnName, columnParameters));
-                }
-        );
+        List<String> tableColumnList = queryFormer.tablesAndColumns.get(tableName);
+        for (int i = 0; i < tableColumnList.size(); i++) {
+            String columnName = tableColumnList.get(i);
+            sb.append(formColumnQueryForCreateTable(tableName, columnName, columns.get(columnName)));
+        }
         sb.append("PRIMARY KEY (" + queryFormer.getColumnId(tableName) + ")");
         pattern = pattern.replace("*columns*", sb.toString());
         return pattern;
@@ -163,13 +169,13 @@ public class QueryFormer {
 
     private String getColumns(String tableName, String columnId) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
-                .filter(s -> queryFormer.isAnnotatedByGenerator(tableName) || !s.equalsIgnoreCase(columnId))
+              //  .filter(s -> queryFormer.isAnnotatedByGenerator(tableName) || !s.equalsIgnoreCase(columnId))
                 .reduce((s1, s2) -> s1 + ", " + s2).get();
     }
 
     private String getValues(String tableName, String columnId) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
-                .filter(s -> !s.equalsIgnoreCase(columnId) || queryFormer.isAnnotatedByGenerator(tableName))
+              //  .filter(s -> !s.equalsIgnoreCase(columnId) || queryFormer.isAnnotatedByGenerator(tableName))
                 .reduce((s1, s2) -> s1 + ", " + s2)
                 .get()
                 .replaceAll("[\\w]+", "?");
