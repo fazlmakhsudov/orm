@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +46,11 @@ final public class  GenerateHandler {
         for (TableDB tableDB :
                 tableDBS) {
             if (!tableDB.getForeignKey().isEmpty()) {
-                strings.add(getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()));
+             String [] queries = getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()).split(";");
+                Arrays.stream(queries).forEach(s ->{
+                    strings.add(s+";");
+                    System.out.println(s+";");
+                });
             }
         }
         createQuery(strings);
@@ -57,7 +62,11 @@ final public class  GenerateHandler {
                 tableDBS
         ) {
             if (!tableDB.getForeignKey().isEmpty()) {
-                strings.add(getForeignKeys(tableDB.getForeignKey()));
+                String [] queries = getForeignKeys(tableDB.getForeignKey()).split(";");
+                Arrays.stream(queries).forEach(s->
+                {
+                    strings.add(s+";");
+                });
             }
         }
         createQuery(strings);

@@ -26,18 +26,18 @@ public class Main {
 
 		// TAble exist
 
-		Zoo zoo = new Zoo();
-		Set<Animal> animal = new HashSet<>();
-		Customer customer1 = new Customer("Federic2", "Babarian2", 2);
-		customer1.setAnimal(animal);
-		customer1.setQwerty(zoo);
-		System.out.println(Handler.getClassByTableName(Handler.getNameTable(Zoo.class)));
-		System.out.println(Handler.isBean(Animal.class));
-		System.out.println(Handler.isBean(Zoo.class));
-//		Customer customer3 = new Customer("Federic3", "Babarian3", 3);
-//		Customer customer4 = new Customer("Federic4", "Babarian4", 4);
-		ICrudService.create(customer1);
-//		ICrudService.create(customer2);
+//		Zoo zoo = new Zoo();
+//		Set<Animal> animal = new HashSet<>();
+//		Customer customer1 = new Customer("Federic2", "Babarian2", 2);
+//		customer1.setAnimal(animal);
+//		customer1.setQwerty(zoo);
+//		System.out.println(Handler.getClassByTableName(Handler.getNameTable(Zoo.class)));
+//		System.out.println(Handler.isBean(Animal.class));
+//		System.out.println(Handler.isBean(Zoo.class));
+////		Customer customer3 = new Customer("Federic3", "Babarian3", 3);
+////		Customer customer4 = new Customer("Federic4", "Babarian4", 4);
+//		ICrudService.create(customer1);
+//		ICrudService.create(customer2); 
 //		ICrudService.create(customer3);
 //		ICrudService.create(customer4);
 //
