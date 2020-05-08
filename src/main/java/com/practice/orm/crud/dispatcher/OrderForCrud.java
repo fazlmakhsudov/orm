@@ -1,4 +1,4 @@
-package com.practice.orm.crud.dispetcher;
+package com.practice.orm.crud.dispatcher;
 
 import com.practice.orm.annotation.entity.entityHandler.Handler;
 
@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OrderForCrud<C> {
-    private C object;
-    private  Map<Integer, List<Object>> orderMap;
+    private final C object;
+    private Map<Integer, List<Object>> orderMap;
 
     public OrderForCrud(C object) {
         this.object = object;
@@ -23,10 +23,9 @@ public class OrderForCrud<C> {
         return orderMap;
     }
 
-    private Map<Integer, List<Object>> scan (Object object, int layer,
-                      Map<Integer, List<Object>> orderMap) throws IllegalAccessException {
+    private Map<Integer, List<Object>> scan(Object object, int layer,
+                                            Map<Integer, List<Object>> orderMap) throws IllegalAccessException {
         String tableName = Handler.getNameTable(object.getClass());
-        System.out.println("tableName " + tableName + " layer: " + layer);
         List<Object> parentOfCurrentLayer = new ArrayList<>();
         parentOfCurrentLayer.add(object);
         if (Handler.hasBeanInside(tableName)) {
@@ -63,8 +62,8 @@ public class OrderForCrud<C> {
 
     private List<Object> getBeans(Object object, String tableName) throws IllegalAccessException {
         List<Object> listOfBeans = new ArrayList<>();
-        Map<String,String> mapOfFields = Handler.getBeanMap(tableName);
-        Field [] fields = object.getClass().getDeclaredFields();
+        Map<String, String> mapOfFields = Handler.getBeanMap(tableName);
+        Field[] fields = object.getClass().getDeclaredFields();
         for (Field field : fields) {
             field.setAccessible(true);
             String fieldName = field.getName();

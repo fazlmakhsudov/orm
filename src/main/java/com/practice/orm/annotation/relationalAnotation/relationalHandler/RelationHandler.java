@@ -105,11 +105,7 @@ public class RelationHandler {
     }
 
     private static boolean isEmptyField(String string) {
-        if (string.length() == 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return string.length() == 0;
     }
 
     private static ForeignKey getForeignKeyForManyToOne(Field field, Class<?> clazz) throws Exception {

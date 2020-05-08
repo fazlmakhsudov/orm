@@ -6,8 +6,7 @@ import java.util.Set;
 
 final public class GeneratorTable {
 
-    public static void generate(Set<TableDB> tableDBS)
-    {
+    public static void generate(Set<TableDB> tableDBS) {
         try {
             GenerateHandler.dropTables(tableDBS);
             GenerateHandler.generateTables(tableDBS);

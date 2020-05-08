@@ -14,8 +14,7 @@ public class ColumnDB {
     public ColumnDB() {
     }
 
-    public ColumnDB(ColumnDB columnDB)
-    {
+    public ColumnDB(ColumnDB columnDB) {
         this.field = columnDB.field;
         this.name = columnDB.name;
         this.type = columnDB.type;

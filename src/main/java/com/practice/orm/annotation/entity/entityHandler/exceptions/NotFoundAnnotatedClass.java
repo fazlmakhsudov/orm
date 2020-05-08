@@ -1,6 +1,6 @@
 package com.practice.orm.annotation.entity.entityHandler.exceptions;
 
-public class NotFoundAnnotatedClass extends Exception{
+public class NotFoundAnnotatedClass extends Exception {
 
     public NotFoundAnnotatedClass() {
         super();

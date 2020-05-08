@@ -1,9 +1,8 @@
 package com.practice.orm.db.utilDao.entiry;
+
 import com.practice.orm.annotation.entity.entityHandler.Handler;
 import com.practice.orm.annotation.generator.GeneratorHandler;
 
-
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +168,7 @@ public class QueryFormer {
 
     private String getColumns(String tableName, String columnId) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
-                  .reduce((s1, s2) -> changeCreateQueryIfBean(tableName, s1, s2)).get();
+                .reduce((s1, s2) -> changeCreateQueryIfBean(tableName, s1, s2)).get();
     }
 
     private String changeCreateQueryIfBean(String tableName, String s1, String s2) {
@@ -185,7 +184,7 @@ public class QueryFormer {
     }
 
     private String getValues(String tableName, String columnId) {
-        return getColumns(tableName,columnId).replaceAll("[\\w]+", "?");
+        return getColumns(tableName, columnId).replaceAll("[\\w]+", "?");
     }
 
     private boolean isAnnotatedByGenerator(String tableName) {
@@ -214,7 +213,7 @@ public class QueryFormer {
     private String getColumnValue(String tableName, String id) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
                 .filter(s -> !s.equalsIgnoreCase(id))
-                .reduce((s1, s2) ->  changeUpdateQueryIfBean(tableName, s1, s2)).get().concat("=?");
+                .reduce((s1, s2) -> changeUpdateQueryIfBean(tableName, s1, s2)).get().concat("=?");
     }
 
     private String changeUpdateQueryIfBean(String tableName, String s1, String s2) {

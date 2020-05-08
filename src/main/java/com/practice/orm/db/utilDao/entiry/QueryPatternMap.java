@@ -1,4 +1,5 @@
 package com.practice.orm.db.utilDao.entiry;
+
 import java.util.HashMap;
 import java.util.Map;
 

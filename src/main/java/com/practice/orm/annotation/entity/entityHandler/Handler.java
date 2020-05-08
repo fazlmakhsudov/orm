@@ -7,7 +7,6 @@ import com.practice.orm.annotation.entity.Id;
 import com.practice.orm.annotation.entity.Table;
 import com.practice.orm.annotation.entity.entityHandler.exceptions.NotFoundAnnotatedClass;
 import com.practice.orm.annotation.generator.Generator;
-import com.practice.orm.annotation.relationalAnotation.ManyToMany;
 import com.practice.orm.annotation.relationalAnotation.relationalHandler.RelationHandler;
 
 import java.lang.annotation.Annotation;
@@ -22,19 +21,19 @@ public class Handler {
     private static final List<Class> classes = new LinkedList<>();
     private static final Set<TableDB> relationalTables = new HashSet<>();
     private static final List<Class<?>> beans = new ArrayList<>();
-    private static final Map<String, Map<String,String>> beanFieldMap = new HashMap<>();
-    static
-    {
+    private static final Map<String, Map<String, String>> beanFieldMap = new HashMap<>();
+
+    static {
 
     }
+
     public static Set<TableDB> getRelationalTables() {
         getTablesDB();
         return relationalTables;
     }
 
     public static void addRelationTable(TableDB tableDB) {
-        if (!relationalTables.contains(tableDB))
-            relationalTables.add(tableDB);
+        relationalTables.add(tableDB);
     }
 
     public static void addClass(Class<?> clazz) {
@@ -50,8 +49,7 @@ public class Handler {
         }
     }
 
-    public static boolean isBean(Class<?> clazz)
-    {
+    public static boolean isBean(Class<?> clazz) {
         getBeans();
         return beans.contains(clazz);
     }
@@ -69,16 +67,15 @@ public class Handler {
         return beanFieldMap.containsKey(tableName);
     }
 
-    public static Map<String,String> getBeanMap(String tableName) {
+    public static Map<String, String> getBeanMap(String tableName) {
         return beanFieldMap.get(tableName);
     }
 
-    private static void getBeans()
-    {
-        for (Class<?> c:
-                getClassesNamedEntity()){
+    private static void getBeans() {
+        for (Class<?> c :
+                getClassesNamedEntity()) {
             Set<Field> fieldsNamedByAnnotation = getFieldsNamedByAnnotation(c, ColumnMarker.class);
-            if (fieldsNamedByAnnotation.size()==0) {
+            if (fieldsNamedByAnnotation.size() == 0) {
                 if (!beans.contains(c))
                     beans.add(c);
             }
@@ -95,12 +92,10 @@ public class Handler {
         return setClasses;
     }
 
-    public static Class getClassByTableName(String tableName)
-    {
+    public static Class getClassByTableName(String tableName) {
         for (Class clazz :
                 classes) {
-            if (getNameTable(clazz).equals(tableName))
-            {
+            if (getNameTable(clazz).equals(tableName)) {
                 return clazz;
             }
         }
@@ -109,8 +104,7 @@ public class Handler {
 
     public static Map<String, List<String>> getTable() {
         Map<String, List<String>> table = new HashMap<>();
-        for (Class cl:getClassesNamedEntity())
-        {
+        for (Class cl : getClassesNamedEntity()) {
             TableDB t = getTableDB(cl);
             List<String> columnsName = new ArrayList<>();
             columnsName.add(t.getPrimaryKey().getName());
@@ -121,16 +115,16 @@ public class Handler {
         }
         for (String tableName :
                 table.keySet()) {
-            getColumnMarker(table,tableName);
+            getColumnMarker(table, tableName);
         }
         return table;
     }
 
-    private static Map<String,List<String>> getColumnMarker(Map<String, List<String>> table, String tableName) {
+    private static Map<String, List<String>> getColumnMarker(Map<String, List<String>> table, String tableName) {
         Class cl = getClassByTableName(tableName);
         List<String> columns = table.get(tableName);
         for (Field f :
-                getFieldsNamedByAnnotation(cl,ColumnMarker.class)) {
+                getFieldsNamedByAnnotation(cl, ColumnMarker.class)) {
             columns.add(f.getName());
             if (!beanFieldMap.containsKey(tableName)) {
                 beanFieldMap.put(tableName, new HashMap<>());
@@ -152,11 +146,7 @@ public class Handler {
         tableDB.setColumnDBS(getColumns(clazz));
         try {
             tableDB.setPrimaryKey(getId(clazz));
-            if (tableDB.getPrimaryKey().getField().isAnnotationPresent(Generator.class)) {
-                tableDB.setPKAutoIncrement(true);
-            } else {
-                tableDB.setPKAutoIncrement(false);
-            }
+            tableDB.setPKAutoIncrement(tableDB.getPrimaryKey().getField().isAnnotationPresent(Generator.class));
             tableDB.setForeignKey(RelationHandler.getForeignKey(clazz));
         } catch (Exception e) {
             e.printStackTrace();
@@ -177,16 +167,14 @@ public class Handler {
         }
     }
 
-    public static Map<Class<?>,String> getNameTableByClass(Class<?> clazz)
-    {
-        Map<Class<?>,String>  nameTable = new HashMap<>();
-        nameTable.put(clazz,getNameTable(clazz));
+    public static Map<Class<?>, String> getNameTableByClass(Class<?> clazz) {
+        Map<Class<?>, String> nameTable = new HashMap<>();
+        nameTable.put(clazz, getNameTable(clazz));
         return nameTable;
     }
 
-    public static Map<String,Field> getFieldByName(Class<?> clazz)
-    {
-        Map<String ,Field> fieldMap = new HashMap<>();
+    public static Map<String, Field> getFieldByName(Class<?> clazz) {
+        Map<String, Field> fieldMap = new HashMap<>();
         for (ColumnDB col :
                 getColumns(clazz)) {
             fieldMap.put(col.getName(), col.getField());
@@ -204,7 +192,7 @@ public class Handler {
     }
 
     public static Set<Field> getFieldsNamedByAnnotation(Class<?> classes,
-                                                         Class<? extends Annotation> annotation) {
+                                                        Class<? extends Annotation> annotation) {
         Set<Field> fields = Arrays.stream(classes.getDeclaredFields())
                 .filter(field -> field.isAnnotationPresent(annotation))
                 .peek(field -> field.setAccessible(true))
@@ -215,10 +203,7 @@ public class Handler {
     private static ColumnDB getColumn(Field field) {
         ColumnDB columnDB = new ColumnDB();
         if (field.isAnnotationPresent(Column.class)) {
-            if (field.getAnnotation(Column.class).nullable() == true)
-                columnDB.setNullable(true);
-            else
-                columnDB.setNullable(false);
+            columnDB.setNullable(field.getAnnotation(Column.class).nullable() == true);
             if (field.getAnnotation(Column.class).name() != "") {
                 columnDB.setName(field.getName());
             } else {
@@ -250,7 +235,7 @@ public class Handler {
         if (clazz.isAnnotationPresent(Table.class)) {
             name = clazz.getAnnotation(Table.class).name();
         } else {
-            name = clazz.getSimpleName()+"s";
+            name = clazz.getSimpleName() + "s";
         }
         return name;
     }

@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-final public class  GenerateHandler {
+final public class GenerateHandler {
 
     private static final String sql = "CREATE TABLE IF NOT EXISTS ";
     private static final String addRelation = "ALTER TABLE ";
@@ -22,7 +22,7 @@ final public class  GenerateHandler {
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS ";
     private static DBUtil dbUtil;
     private static Connection connection = null;
-    private static Statement statement = null;
+    private static final Statement statement = null;
 
     static {
         try {
@@ -46,9 +46,9 @@ final public class  GenerateHandler {
         for (TableDB tableDB :
                 tableDBS) {
             if (!tableDB.getForeignKey().isEmpty()) {
-             String [] queries = getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()).split(";");
-                Arrays.stream(queries).forEach(s ->{
-                    strings.add(s+";");
+                String[] queries = getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()).split(";");
+                Arrays.stream(queries).forEach(s -> {
+                    strings.add(s + ";");
                 });
             }
         }
@@ -61,10 +61,10 @@ final public class  GenerateHandler {
                 tableDBS
         ) {
             if (!tableDB.getForeignKey().isEmpty()) {
-                String [] queries = getForeignKeys(tableDB.getForeignKey()).split(";");
-                Arrays.stream(queries).forEach(s->
+                String[] queries = getForeignKeys(tableDB.getForeignKey()).split(";");
+                Arrays.stream(queries).forEach(s ->
                 {
-                    strings.add(s+";");
+                    strings.add(s + ";");
                 });
             }
         }
