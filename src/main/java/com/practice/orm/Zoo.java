@@ -23,6 +23,11 @@ public class Zoo {
     public Zoo(int id) {
         this.id = id;
     }
+    public Zoo() {
+    }
+    public void setId(int id) {
+        this.id = id;
+    }
 
     @Override
     public String toString() {

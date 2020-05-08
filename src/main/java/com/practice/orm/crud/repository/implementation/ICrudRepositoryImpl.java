@@ -246,7 +246,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			}
 			Field field = clazz.getDeclaredField(fieldName);
 			field.setAccessible(true);
-			column = isFieldBeanColumn(column, field.getType());
+			column = isFieldBeanColumn(column, clazz);
 			Object value = resultSet.getObject(column);
 			boolean flag = Handler.isBean(field.getType());
 			// you can latter implement lazy load

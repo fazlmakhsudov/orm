@@ -32,8 +32,8 @@ public class Customer {
 	@Column(name = "age", nullable = false)
 	private int age;
 
-//	@ManyToOne
-//	@ColumnMarker
+	@ManyToOne
+	@ColumnMarker
 	private Zoo qwerty;
 //
 //	@ManyToMany
@@ -76,7 +76,12 @@ public class Customer {
 
 	@Override
 	public String toString() {
-		return "Customer [id=" + id + ", firstname=" + firstname + ", lastname=" + lastname + ", age=" + age + "]";
+		return "Customer{" +
+				"id=" + id +
+				", firstname='" + firstname + '\'' +
+				", lastname='" + lastname + '\'' +
+				", age=" + age +
+				", qwerty=" + qwerty +
+				'}';
 	}
-
 }

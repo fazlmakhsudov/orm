@@ -26,7 +26,7 @@ public class Main {
 
 		// TAble exist
 //
-//		Zoo zoo = new Zoo(22);
+		Zoo zoo = new Zoo(22);
 //		Set<Animal> animal = new HashSet<>();
 		Customer customer1 = new Customer("Federic1", "Babarian1", 22);
 		Customer customer2 = new Customer("Federic2", "Babarian2", 21);
@@ -34,7 +34,7 @@ public class Main {
 		Customer customer4 = new Customer("Federic4", "Babarian4", 24);
 
 //		customer1.setAnimal(animal);
-//		customer1.setQwerty(zoo);
+		customer1.setQwerty(zoo);
 //		System.out.println(Handler.getClassByTableName(Handler.getNameTable(Zoo.class)));
 //		System.out.println(Handler.isBean(Animal.class));
 //		System.out.println(Handler.isBean(Zoo.class));
@@ -45,10 +45,11 @@ public class Main {
 		ICrudService.create(customer3);
 		ICrudService.create(customer4);
 
-//		System.out.println(ICrudService.read(3, Customer.class).toString() + " :: read");
-		System.out.println(ICrudService.update(1, new Customer("update", "surnamupta", 33)));
-//		System.out.println("delete: " + ICrudService.delete(2, Customer.class ));;
-//		System.out.println(ICrudService.readAll(Customer.class));
+//		System.out.println(ICrudService.read(1, Customer.class).toString() + " :: read");
+		zoo.setId(33);
+//		System.out.println(ICrudService.update(1, customer1));
+//		System.out.println("delete: " + ICrudService.delete(1, Customer.class ));;
+		System.out.println(ICrudService.readAll(Customer.class));
 
 
 	}
