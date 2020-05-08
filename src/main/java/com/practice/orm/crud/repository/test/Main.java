@@ -6,7 +6,9 @@ import com.practice.orm.annotation.entity.DBHandlers.ColumnDB;
 import com.practice.orm.annotation.entity.entityHandler.ColumnMarker;
 import com.practice.orm.annotation.entity.entityHandler.Handler;
 import com.practice.orm.annotation.entity.generatorTable.Creator;
+import com.practice.orm.crud.dispetcher.OrderForCrud;
 import com.practice.orm.crud.service.ICrudService;
+import org.bson.io.BsonOutput;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
@@ -35,22 +37,36 @@ public class Main {
 
 //		customer1.setAnimal(animal);
 		customer1.setQwerty(zoo);
+
+
+
+
+
+
+
 //		System.out.println(Handler.getClassByTableName(Handler.getNameTable(Zoo.class)));
 //		System.out.println(Handler.isBean(Animal.class));
 //		System.out.println(Handler.isBean(Zoo.class));
 //		Customer customer3 = new Customer("Federic3", "Babarian3", 3);
 ////		Customer customer4 = new Customer("Federic4", "Babarian4", 4);
 		ICrudService.create(customer1);
-		ICrudService.create(customer2);
-		ICrudService.create(customer3);
-		ICrudService.create(customer4);
+		OrderForCrud orderForCrud = new OrderForCrud(customer1);
+		Map<Integer, List<Object>>  ord = orderForCrud.getOrderMap();
+		ord.forEach((integer, objects) -> System.out.println(integer + " : " + objects));
+//		ICrudService.create(customer2);
+//		ICrudService.create(customer3);
+//		ICrudService.create(customer4);
 
 //		System.out.println(ICrudService.read(1, Customer.class).toString() + " :: read");
-		zoo.setId(33);
+//		zoo.setId(33);
 //		System.out.println(ICrudService.update(1, customer1));
 //		System.out.println("delete: " + ICrudService.delete(1, Customer.class ));;
-		System.out.println(ICrudService.readAll(Customer.class));
-
-
+//		System.out.println(ICrudService.readAll(Customer.class));
+//		Handler.getNamesTable(Handler.getClassesNamedEntity()).forEach((d,a)->{
+//			System.out.println(d.getSimpleName() + "    " + a);
+//		});
+//		System.out.println("*******");
+//		Handler.getFieldByName(Customer.class).forEach((s,d) -> System.out.println(s + "  " + d));
+//		Handler.getClassesNamedEntity().stream().forEach(d-> System.out.println(d));
 	}
 }

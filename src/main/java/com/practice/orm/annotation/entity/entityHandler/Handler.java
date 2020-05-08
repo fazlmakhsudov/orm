@@ -65,6 +65,14 @@ public class Handler {
         return value;
     }
 
+    public static boolean hasBeanInside(String tableName) {
+        return beanFieldMap.containsKey(tableName);
+    }
+
+    public static Map<String,String> getBeanMap(String tableName) {
+        return beanFieldMap.get(tableName);
+    }
+
     private static void getBeans()
     {
         for (Class<?> c:
@@ -121,12 +129,12 @@ public class Handler {
     private static Map<String,List<String>> getColumnMarker(Map<String, List<String>> table, String tableName) {
         Class cl = getClassByTableName(tableName);
         List<String> columns = table.get(tableName);
-        if (!beanFieldMap.containsKey(tableName)) {
-            beanFieldMap.put(tableName, new HashMap<>());
-        }
         for (Field f :
                 getFieldsNamedByAnnotation(cl,ColumnMarker.class)) {
             columns.add(f.getName());
+            if (!beanFieldMap.containsKey(tableName)) {
+                beanFieldMap.put(tableName, new HashMap<>());
+            }
             String beanMap = getNameTable(f.getType()) + "_id";
             if (!beanFieldMap.get(tableName).containsKey(beanMap)) {
                 beanFieldMap.get(tableName).put(beanMap, f.getName());
