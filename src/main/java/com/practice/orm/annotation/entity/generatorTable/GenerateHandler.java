@@ -3,15 +3,18 @@ package com.practice.orm.annotation.entity.generatorTable;
 import com.practice.orm.annotation.entity.DBHandlers.ColumnDB;
 import com.practice.orm.annotation.entity.DBHandlers.ForeignKey;
 import com.practice.orm.annotation.entity.DBHandlers.TableDB;
+import com.practice.orm.db.utilDao.entiry.DBUtil;
+import com.practice.orm.db.utilDao.entiry.PropertyBundle;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-final public class  GenerateHandler {
+final public class GenerateHandler {
 
     private static final String sql = "CREATE TABLE IF NOT EXISTS ";
     private static final String addRelation = "ALTER TABLE ";
@@ -19,7 +22,7 @@ final public class  GenerateHandler {
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS ";
     private static DBUtil dbUtil;
     private static Connection connection = null;
-    private static Statement statement = null;
+    private static final Statement statement = null;
 
     static {
         try {
@@ -43,7 +46,10 @@ final public class  GenerateHandler {
         for (TableDB tableDB :
                 tableDBS) {
             if (!tableDB.getForeignKey().isEmpty()) {
-                strings.add(getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()));
+                String[] queries = getQueryRelation(tableDB.getForeignKey(), tableDB.getTableName()).split(";");
+                Arrays.stream(queries).forEach(s -> {
+                    strings.add(s + ";");
+                });
             }
         }
         createQuery(strings);
@@ -55,7 +61,11 @@ final public class  GenerateHandler {
                 tableDBS
         ) {
             if (!tableDB.getForeignKey().isEmpty()) {
-                strings.add(getForeignKeys(tableDB.getForeignKey()));
+                String[] queries = getForeignKeys(tableDB.getForeignKey()).split(";");
+                Arrays.stream(queries).forEach(s ->
+                {
+                    strings.add(s + ";");
+                });
             }
         }
         createQuery(strings);

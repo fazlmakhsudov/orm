@@ -22,13 +22,20 @@ public class QueryPatternMap {
 
     private void initializeBigPatternMap() {
         bigPatternMap.put(DbKeys.MYSQL, new HashMap<>());
-        bigPatternMap.put(DbKeys.POSTGRE, new HashMap<>());
+        bigPatternMap.put(DbKeys.POSTGRES, new HashMap<>());
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.CREATE, "INSERT INTO *table* (*columns*) VALUES (*values*);");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.READ, "SELECT * FROM *table* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.UPDATE, "UPDATE *table* SET *set-block* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.DELETE, "DELETE FROM *table* WHERE *condition*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.READ_ALL, "SELECT * FROM *table*;");
         bigPatternMap.get(DbKeys.MYSQL).put(DbKeys.CREATE_TABLE, "CREATE TABLE IF NOT EXISTS *table*(*columns*);");
+
+        bigPatternMap.get(DbKeys.POSTGRES).put(DbKeys.CREATE, "INSERT INTO *table* (*columns*) VALUES (*values*);");
+        bigPatternMap.get(DbKeys.POSTGRES).put(DbKeys.READ, "SELECT * FROM *table* WHERE *condition*;");
+        bigPatternMap.get(DbKeys.POSTGRES).put(DbKeys.UPDATE, "UPDATE *table* SET *set-block* WHERE *condition*;");
+        bigPatternMap.get(DbKeys.POSTGRES).put(DbKeys.DELETE, "DELETE FROM *table* WHERE *condition*;");
+        bigPatternMap.get(DbKeys.POSTGRES).put(DbKeys.READ_ALL, "SELECT * FROM *table*;");
+        bigPatternMap.get(DbKeys.POSTGRES).put(DbKeys.CREATE_TABLE, "CREATE TABLE IF NOT EXISTS *table*(*columns*);");
     }
 
     public void setDbName(String dbName) {
