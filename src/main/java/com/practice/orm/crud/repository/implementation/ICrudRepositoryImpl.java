@@ -45,7 +45,6 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			Map<String,Field> fieldList = makeListOfFields(object);
 			PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
 			setFields(fieldList, preparedStatement, object);
-			System.out.println(preparedStatement.toString());
 			flag = preparedStatement.executeUpdate() > 0;
 			if (flag) {
 				System.out.println("A new object has been added successfully");
@@ -90,21 +89,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		boolean flag = false;
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
-			C objectToUpdate = find(id, obj.getClass());
-			String sqlQuery = makeSqlQuery(obj.getClass(), DbKeys.UPDATE);
-			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
-			Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
-			tableName = namesOfTables.get(obj.getClass());
-			Map<String,Field> fieldMap = makeListOfFields(objectToUpdate);
-			List<String> fieldOrder = QueryFormer.getInstance().getFieldOrder(tableName);
-			for (int i = 1; i < fieldOrder.size(); i++) {
-				String column = fieldOrder.get(i);
-				Field field = fieldMap.get(column);
-				field.setAccessible(true);
-				Object fieldValue = getBeanIdFromField(field,obj); //field.get(obj);
-				preparedStatement.setObject( i, fieldValue);
-			}
-			preparedStatement.setObject(fieldMap.size(), id);
+			PreparedStatement preparedStatement = updateIntermidiateOperation(id, obj, connection);
 			flag = preparedStatement.executeUpdate() > 0;
 			if (flag) {
 				System.out.println("A new object has been modified successfully");
@@ -142,6 +127,25 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		preparedStatement.close();
 		dbUtil.returnConnectionToPool(connection);
 		return foundObjects;
+	}
+
+	private PreparedStatement updateIntermidiateOperation(Object id, C obj, Connection connection)
+			throws SQLException, NoSuchFieldException, IllegalAccessException {
+		String sqlQuery = makeSqlQuery(obj.getClass(), DbKeys.UPDATE);
+		PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
+		Map<Class<?>, String> namesOfTables = Handler.getNamesTable(Handler.getClassesNamedEntity());
+		tableName = namesOfTables.get(obj.getClass());
+		Map<String,Field> fieldMap = makeListOfFields(obj);
+		List<String> fieldOrder = QueryFormer.getInstance().getFieldOrder(tableName);
+		for (int i = 1; i < fieldOrder.size(); i++) {
+			String column = fieldOrder.get(i);
+			Field field = fieldMap.get(column);
+			field.setAccessible(true);
+			Object fieldValue = getBeanIdFromField(field,obj);
+			preparedStatement.setObject( i, fieldValue);
+		}
+		preparedStatement.setObject(fieldMap.size(), id);
+		return preparedStatement;
 	}
 
 	private String makeSqlQuery(C obj) throws NotFoundAnnotatedClass {
