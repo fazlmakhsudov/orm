@@ -38,7 +38,6 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
 	@Override
 	public boolean add(C object) {
-		//ошибка в порядке значений для преп стат
 		boolean flag = false;
 		try {
 			Connection connection = dbUtil.getConnectionFromPool();
@@ -46,6 +45,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			Map<String,Field> fieldList = makeListOfFields(object);
 			PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
 			setFields(fieldList, preparedStatement, object);
+			System.out.println(preparedStatement.toString());
 			flag = preparedStatement.executeUpdate() > 0;
 			if (flag) {
 				System.out.println("A new object has been added successfully");
@@ -60,25 +60,28 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 
 	@Override
 	public C find(Object id, Class clazz) {
-
+		Connection connection = dbUtil.getConnectionFromPool();
 		C foundObject = null;
 		try {
-			foundObject = (C) clazz.newInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		try {
-			Connection connection = dbUtil.getConnectionFromPool();
-			String SqlQuery = makeSqlQuery(clazz, DbKeys.READ);
-			PreparedStatement preparedStatement = connection.prepareStatement(SqlQuery);
+			String sqlQuery = makeSqlQuery(clazz, DbKeys.READ);
+			PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery);
 			preparedStatement.setObject(1, id);
 			ResultSet resultSet = preparedStatement.executeQuery();
-			foundObject = returnObject(resultSet, foundObject, clazz);
-			dbUtil.returnConnectionToPool(connection);
-		} catch (Exception Ex) {
-			Ex.printStackTrace();
+			if (resultSet.next()) {
+				foundObject = this.getObjectFromResultSet(resultSet, clazz);
+			}
+			resultSet.close();
+			preparedStatement.close();
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			e.printStackTrace();
+		} catch (SQLException throwables) {
+			throwables.printStackTrace();
 		}
+		dbUtil.returnConnectionToPool(connection);
 		return foundObject;
 	}
 
@@ -98,7 +101,7 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 				String column = fieldOrder.get(i);
 				Field field = fieldMap.get(column);
 				field.setAccessible(true);
-				Object fieldValue = field.get(obj);
+				Object fieldValue = getBeanIdFromField(field,obj); //field.get(obj);
 				preparedStatement.setObject( i, fieldValue);
 			}
 			preparedStatement.setObject(fieldMap.size(), id);
@@ -184,13 +187,11 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			throws IllegalArgumentException, IllegalAccessException, SQLException, NoSuchFieldException {
 		Object idValue = GeneratorHandler.getInstance().generateIdValue(tableName);
 		List<String> fieldOrder = QueryFormer.getInstance().getFieldOrder(tableName);
-		System.out.println(fieldOrder);
-		System.out.println(fieldMap);
 		for (int i = 0; i < fieldOrder.size(); i++) {
 			String column = fieldOrder.get(i);
 			Field field = fieldMap.get(column);
 			field.setAccessible(true);
-			Object fieldValue = field.get(obj);
+			Object fieldValue = getBeanIdFromField(field, obj);
 			if (i == 0) {
 				fieldValue = idValue;
 			}
@@ -198,39 +199,36 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 		}
 	}
 
-	private C returnObject(ResultSet resultSet, C foundObject, Class clazz) {
-		Field[] fields = clazz.getDeclaredFields();
-		try {
-			if (resultSet.next()) {
-				for (String column : Handler.getTable().get(tableName)) {
-					if (column.equals(tableName + "_id")) {
-						for (Field f : fields) {
-							if (f.getName().equals("id")) {
-								f.setAccessible(true);
-								f.set(foundObject, resultSet.getInt(column));
-							}
-						}
-
-						continue;
-					}
-					for (Field f : fields) {
-						if (f.getType() == int.class && f.getName().equals(column)) {
-							f.setAccessible(true);
-							f.set(foundObject, resultSet.getInt(column));
-						}
-
-						if (f.getType() == String.class && f.getName().equals(column)) {
-							f.setAccessible(true);
-							f.set(foundObject, resultSet.getString(column));
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+	private String isFieldBeanColumn(String column, Class cl) {
+		String tableName = Handler.getNameTable(cl);
+		String value = Handler.getBeanMap(tableName, column);
+		if (value != null) {
+			column = value;
 		}
+		return column;
+	}
 
-		return foundObject;
+	private Object getBeanIdFromField(Field field, C obj) throws IllegalAccessException, NoSuchFieldException {
+		boolean flag = Handler.isBean(field.getType());
+		Object value = field.get(obj);
+		if (!flag) {
+			return value;
+		}
+		Field idField = getIdFieldFromBean(field);
+		return idField.get(field.get(obj));
+	}
+
+	private Field getIdFieldFromBean(Field field) throws NoSuchFieldException {
+		Class fieldType = field.getType();
+		String tableName = Handler.getNameTable(fieldType);
+		String columnId = QueryFormer.getInstance().getColumnId(tableName);
+		if (columnId.matches(tableName + ".+")) {
+			int charAt = columnId.indexOf("_");
+			columnId = columnId.substring(charAt + 1);
+		}
+		Field idField = fieldType.getDeclaredField(columnId);
+		idField.setAccessible(true);
+		return idField;
 	}
 
 	private C getObjectFromResultSet(ResultSet resultSet, Class clazz) throws IllegalAccessException, InstantiationException, NoSuchFieldException, SQLException {
@@ -244,8 +242,18 @@ public class ICrudRepositoryImpl<C> implements ICrudRepository<C, Integer> {
 			}
 			Field field = clazz.getDeclaredField(fieldName);
 			field.setAccessible(true);
+			column = isFieldBeanColumn(column, field.getType());
 			Object value = resultSet.getObject(column);
-			field.set(obj, value);
+			boolean flag = Handler.isBean(field.getType());
+			// you can latter implement lazy load
+			if (flag) {
+				Field idField = getIdFieldFromBean(field);
+				Object bean = field.getType().newInstance();
+				idField.set(bean,value);
+				field.set(obj, bean);
+			} else  {
+				field.set(obj, value);
+			}
 		}
 		return obj;
 	}

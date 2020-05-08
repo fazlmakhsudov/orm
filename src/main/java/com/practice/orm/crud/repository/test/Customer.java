@@ -32,12 +32,12 @@ public class Customer {
 	@Column(name = "age", nullable = false)
 	private int age;
 
-	@ManyToOne
-	@ColumnMarker
+//	@ManyToOne
+//	@ColumnMarker
 	private Zoo qwerty;
-
-	@ManyToMany
-	@ColumnMarker
+//
+//	@ManyToMany
+//	@ColumnMarker
 	private Set<Animal> animal;
 
 	public Set<Animal> getAnimal() {

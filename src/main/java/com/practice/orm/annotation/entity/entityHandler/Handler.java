@@ -22,6 +22,7 @@ public class Handler {
     private static final List<Class> classes = new LinkedList<>();
     private static final Set<TableDB> relationalTables = new HashSet<>();
     private static final List<Class<?>> beans = new ArrayList<>();
+    private static final Map<String, Map<String,String>> beanFieldMap = new HashMap<>();
     static
     {
 
@@ -53,6 +54,15 @@ public class Handler {
     {
         getBeans();
         return beans.contains(clazz);
+    }
+
+    public static String getBeanMap(String tableName, String key) {
+        String value = null;
+        if (beanFieldMap.containsKey(tableName)
+                && beanFieldMap.get(tableName).containsKey(key)) {
+            value = beanFieldMap.get(tableName).get(key);
+        }
+        return value;
     }
 
     private static void getBeans()
@@ -111,10 +121,19 @@ public class Handler {
     private static Map<String,List<String>> getColumnMarker(Map<String, List<String>> table, String tableName) {
         Class cl = getClassByTableName(tableName);
         List<String> columns = table.get(tableName);
-
+        if (!beanFieldMap.containsKey(tableName)) {
+            beanFieldMap.put(tableName, new HashMap<>());
+        }
         for (Field f :
                 getFieldsNamedByAnnotation(cl,ColumnMarker.class)) {
             columns.add(f.getName());
+            String beanMap = getNameTable(f.getType()) + "_id";
+            if (!beanFieldMap.get(tableName).containsKey(beanMap)) {
+                beanFieldMap.get(tableName).put(beanMap, f.getName());
+            }
+            if (!beanFieldMap.get(tableName).containsKey(f.getName())) {
+                beanFieldMap.get(tableName).put(f.getName(), beanMap);
+            }
         }
         return table;
     }

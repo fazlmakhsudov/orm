@@ -20,7 +20,17 @@ public class Zoo {
     @Column
     private float price;
 
+    public Zoo(int id) {
+        this.id = id;
+    }
 
-
-
+    @Override
+    public String toString() {
+        return "Zoo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", street='" + street + '\'' +
+                ", price=" + price +
+                '}';
+    }
 }

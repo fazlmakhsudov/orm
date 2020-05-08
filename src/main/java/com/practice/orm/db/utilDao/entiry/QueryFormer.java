@@ -1,4 +1,5 @@
 package com.practice.orm.db.utilDao.entiry;
+import com.practice.orm.annotation.entity.entityHandler.Handler;
 import com.practice.orm.annotation.generator.GeneratorHandler;
 
 
@@ -162,22 +163,29 @@ public class QueryFormer {
         return queryPattern.replace("*table*", tableName);
     }
 
-    private String getColumnId(String tableName) {
+    public String getColumnId(String tableName) {
         return queryFormer.tablesAndColumns.get(tableName).get(0);
     }
 
     private String getColumns(String tableName, String columnId) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
-                //  .filter(s -> queryFormer.isAnnotatedByGenerator(tableName) || !s.equalsIgnoreCase(columnId))
-                .reduce((s1, s2) -> s1 + ", " + s2).get();
+                  .reduce((s1, s2) -> changeCreateQueryIfBean(tableName, s1, s2)).get();
+    }
+
+    private String changeCreateQueryIfBean(String tableName, String s1, String s2) {
+        String value = Handler.getBeanMap(tableName, s1);
+        if (value != null) {
+            s1 = value;
+        }
+        value = Handler.getBeanMap(tableName, s2);
+        if (value != null) {
+            s2 = value;
+        }
+        return s1 + ", " + s2;
     }
 
     private String getValues(String tableName, String columnId) {
-        return queryFormer.tablesAndColumns.get(tableName).stream()
-                //  .filter(s -> !s.equalsIgnoreCase(columnId) || queryFormer.isAnnotatedByGenerator(tableName))
-                .reduce((s1, s2) -> s1 + ", " + s2)
-                .get()
-                .replaceAll("[\\w]+", "?");
+        return getColumns(tableName,columnId).replaceAll("[\\w]+", "?");
     }
 
     private boolean isAnnotatedByGenerator(String tableName) {
@@ -206,7 +214,19 @@ public class QueryFormer {
     private String getColumnValue(String tableName, String id) {
         return queryFormer.tablesAndColumns.get(tableName).stream()
                 .filter(s -> !s.equalsIgnoreCase(id))
-                .reduce((s1, s2) -> s1 + "=?, " + s2).get().concat("=?");
+                .reduce((s1, s2) ->  changeUpdateQueryIfBean(tableName, s1, s2)).get().concat("=?");
+    }
+
+    private String changeUpdateQueryIfBean(String tableName, String s1, String s2) {
+        String value = Handler.getBeanMap(tableName, s1);
+        if (value != null) {
+            s1 = value;
+        }
+        value = Handler.getBeanMap(tableName, s2);
+        if (value != null) {
+            s2 = value;
+        }
+        return s1 + "=?, " + s2;
     }
 
     private String formDeleteQuery(String tableName, String queryPattern) {

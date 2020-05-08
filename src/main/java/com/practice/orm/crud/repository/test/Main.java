@@ -19,30 +19,34 @@ public class Main {
 	public static void main(String[] args) throws Exception {
 		//Dima creates tables
 //		Creator.addAnnotatedClass(Zoo.class);
-		Creator.addAnnotatedClass(Animal.class);
+//		Creator.addAnnotatedClass(Animal.class);
 		Creator.addAnnotatedClass(Customer.class);
 		Creator.addAnnotatedClass(Zoo.class);
 		Creator.build();
 
 		// TAble exist
-
-//		Zoo zoo = new Zoo();
+//
+//		Zoo zoo = new Zoo(22);
 //		Set<Animal> animal = new HashSet<>();
-//		Customer customer1 = new Customer("Federic2", "Babarian2", 2);
+		Customer customer1 = new Customer("Federic1", "Babarian1", 22);
+		Customer customer2 = new Customer("Federic2", "Babarian2", 21);
+		Customer customer3 = new Customer("Federic3", "Babarian3", 23);
+		Customer customer4 = new Customer("Federic4", "Babarian4", 24);
+
 //		customer1.setAnimal(animal);
 //		customer1.setQwerty(zoo);
 //		System.out.println(Handler.getClassByTableName(Handler.getNameTable(Zoo.class)));
 //		System.out.println(Handler.isBean(Animal.class));
 //		System.out.println(Handler.isBean(Zoo.class));
-////		Customer customer3 = new Customer("Federic3", "Babarian3", 3);
+//		Customer customer3 = new Customer("Federic3", "Babarian3", 3);
 ////		Customer customer4 = new Customer("Federic4", "Babarian4", 4);
-//		ICrudService.create(customer1);
-//		ICrudService.create(customer2); 
-//		ICrudService.create(customer3);
-//		ICrudService.create(customer4);
-//
+		ICrudService.create(customer1);
+		ICrudService.create(customer2);
+		ICrudService.create(customer3);
+		ICrudService.create(customer4);
+
 //		System.out.println(ICrudService.read(3, Customer.class).toString() + " :: read");
-//		System.out.println(ICrudService.update(1, new Customer("update", "surnamupta", 33)));
+		System.out.println(ICrudService.update(1, new Customer("update", "surnamupta", 33)));
 //		System.out.println("delete: " + ICrudService.delete(2, Customer.class ));;
 //		System.out.println(ICrudService.readAll(Customer.class));
 
